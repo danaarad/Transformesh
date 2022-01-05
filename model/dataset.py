@@ -39,12 +39,9 @@ class IMDBDataset(Dataset):
         labels = [s["label"] for s in raw_data]
 
         reviews = self.tokenize(reviews)
-        full_labels = np.zeros((len(labels), self.nclasses))
-        for i in range(len(labels)):
-            full_labels[i][labels[i]] = 1
 
         reviews_tensor = torch.from_numpy(reviews).to(torch.int64)
-        labels_tensor = torch.from_numpy(full_labels).to(torch.int64)
+        labels_tensor = torch.tensor(labels).to(torch.int64)
         return reviews_tensor, labels_tensor
 
     def __len__(self):
