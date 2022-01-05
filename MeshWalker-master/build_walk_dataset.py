@@ -5,6 +5,26 @@ from easydict import EasyDict
 from walks import get_seq_random_walk_random_global_jumps
 
 
+CUBES_LABELS = [
+    'apple', 'bat', 'bell', 'brick', 'camel',
+    'car', 'carriage', 'chopper', 'elephant', 'fork',
+    'guitar', 'hammer', 'heart', 'horseshoe', 'key',
+    'lmfish', 'octopus', 'shoe', 'spoon', 'tree',
+    'turtle', 'watch'
+]
+CUBES_SHAPE2LABEL = {v: k for k, v in enumerate(CUBES_LABELS)}
+
+SHREC16_LABELS = [
+    'armadillo', 'man', 'centaur', 'dinosaur', 'dog2',
+    'ants', 'rabbit', 'dog1', 'snake', 'bird2',
+    'shark', 'dino_ske', 'laptop', 'santa', 'flamingo',
+    'horse', 'hand', 'lamp', 'two_balls', 'gorilla',
+    'alien', 'octopus', 'cat', 'woman', 'spiders',
+    'camel', 'pliers', 'myScissor', 'glasses', 'bird1'
+]
+SHREC16_SHAPE2LABEL = {v: k for k, v in enumerate(SHREC16_LABELS)}
+
+
 def fill_dxdydz_features(vertices, mesh_extra, seq, jumps, seq_len):
     walk = np.diff(vertices[seq[:seq_len + 1]], axis=0) * 100
     return walk
@@ -51,6 +71,10 @@ def load_mesh(model_fn, classification=True):
 
 def get_mesh_id(dataset, shape, split, file):
     return f"{dataset}_{split}_{shape}_{file}"
+
+
+def get_mesh_label(mesh_id):
+    return
 
 
 def generate_random_walks(mesh_file, walk_len, num_walks_per_mesh):
