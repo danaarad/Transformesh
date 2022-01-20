@@ -27,6 +27,7 @@ SHREC16_LABELS = [
 ]
 SHREC16_SHAPE2LABEL = {v: k for k, v in enumerate(SHREC16_LABELS)}
 
+
 class NumpyArrayEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, np.integer):
@@ -121,7 +122,8 @@ def generate_random_walks(mesh_file, num_walks_per_mesh, walk_len=None, walk_len
     return walks
 
 
-def generate_walks_from_dataset(dataset_name, dataset_path, data_split, walk_params, output_file):
+def generate_walks_from_dataset(dataset_name, dataset_path, data_split, walk_params, output_file,
+                                dev_meshes_per_shape=None):
     def get_dir_label(dir_path):
         for shape in shape_labels:
             if shape in str(dir_path):
@@ -138,7 +140,9 @@ def generate_walks_from_dataset(dataset_name, dataset_path, data_split, walk_par
         label = get_dir_label(shape_subdir)
         shapes_split_dir = PurePosixPath(shape_subdir) / data_split
         file_paths = get_object_files_in_dir(shapes_split_dir)
+        dev_counter = 0 if data_split == "train" and dev_meshes_per_shape is not None else None
         for obj_file in file_paths:
+            object_goes_to_dev_set = dev_counter is not None and dev_counter < dev_meshes_per_shape
             obj_path_str = str(obj_file)
             random_walks = generate_random_walks(mesh_file=obj_path_str,
                                                  num_walks_per_mesh=walk_params['num_walks_per_mesh'],
@@ -147,7 +151,11 @@ def generate_walks_from_dataset(dataset_name, dataset_path, data_split, walk_par
             for walk in random_walks:
                 random_walks[walk]['shape_id'] = obj_path_str
                 random_walks[walk]['shape_label'] = label
-                random_walks[walk]['split'] = data_split
+                if object_goes_to_dev_set:
+                    random_walks[walk]['split'] = "dev"
+                    dev_counter += 1
+                else:
+                    random_walks[walk]['split'] = data_split
             for walk in random_walks:
                 output_dict[walk] = random_walks[walk]
     write_dictionary_to_json(output_json=output_file, dictionary=output_dict)
@@ -159,6 +167,7 @@ def write_dictionary_to_json(output_json, dictionary):
     with open(output_json, "w", encoding="utf-8") as outfile:
         json.dump(dictionary, outfile, indent=4, cls=NumpyArrayEncoder)
     return True
+
 
 def get_all_subdirectories(dir_path):
     subdirs = []
@@ -190,9 +199,35 @@ def get_object_files_in_dir(dir_path):
 #     print(f)
 # print(SHREC16_SHAPE2LABEL)
 
-RANDOM_WALK_PARAMS = {'num_walks_per_mesh': 128, 'walk_len': None, 'walk_len_vertices_ratio': 0.5}
-generate_walks_from_dataset(dataset_name="shrec16",
-                            dataset_path="./data/shrec_16/",
-                            data_split="test",
+RANDOM_WALK_PARAMS = {'num_walks_per_mesh': 32, 'walk_len': None, 'walk_len_vertices_ratio': 0.5}
+
+# output_json = f"./data/walks/walks_shrec16_test_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V.json "
+# generate_walks_from_dataset(dataset_name="shrec16",
+#                             dataset_path="./data/shrec_16/",
+#                             data_split="test",
+#                             walk_params=RANDOM_WALK_PARAMS,
+#                             output_file=output_json)
+
+# output_json = f"./data/walks/walks_shrec16_train_dev_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V.json "
+# generate_walks_from_dataset(dataset_name="shrec16",
+#                             dataset_path="./data/shrec_16/",
+#                             data_split="train",
+#                             walk_params=RANDOM_WALK_PARAMS,
+#                             output_file=output_json,
+#                             dev_meshes_per_shape=2)
+
+
+# output_json = f"./data/walks/walks_cubes_test_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V.json "
+# generate_walks_from_dataset(dataset_name="cubes",
+#                             dataset_path="./data/cubes/",
+#                             data_split="test",
+#                             walk_params=RANDOM_WALK_PARAMS,
+#                             output_file=output_json)
+
+output_json = f"./data/walks/walks_cubes_train_dev_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V.json "
+generate_walks_from_dataset(dataset_name="cubes",
+                            dataset_path="./data/cubes/",
+                            data_split="train",
                             walk_params=RANDOM_WALK_PARAMS,
-                            output_file=f"./data/walks/walks_shrec16_test.json")
+                            output_file=output_json,
+                            dev_meshes_per_shape=15)
