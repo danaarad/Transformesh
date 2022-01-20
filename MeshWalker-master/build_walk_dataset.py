@@ -144,7 +144,10 @@ def generate_walks_from_dataset(dataset_name, dataset_path, data_split, walk_par
                                                  num_walks_per_mesh=walk_params['num_walks_per_mesh'],
                                                  walk_len=walk_params['walk_len'],
                                                  walk_len_vertices_ratio=walk_params['walk_len_vertices_ratio'])
-            random_walks['shape_label'] = label
+            for walk in random_walks:
+                random_walks[walk]['shape_id'] = obj_path_str
+                random_walks[walk]['shape_label'] = label
+                random_walks[walk]['split'] = data_split
             for walk in random_walks:
                 output_dict[walk] = random_walks[walk]
     write_dictionary_to_json(output_json=output_file, dictionary=output_dict)
