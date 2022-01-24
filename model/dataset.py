@@ -1,51 +1,70 @@
+import json
+import random
 import numpy as np
 
 import torch
 from torch.utils.data import Dataset
 
-from transformers import BertTokenizer
 
+class Mesh_Dataset(Dataset):
+    def __init__(self, split, args):
+        self.split = split
+        self.filename = args.data_json
+        self.num_walks = args.num_walks
+        self.max_walk_len = args.max_walk_len
+        self.nclasses = args.nclasses
+        self.seqs, self.labels = self.process_data()
 
+    def process_data(self):
+        with open(self.filename, "rb") as f:
+            data = json.load(f)
 
-class IMDBDataset(Dataset):
-    def __init__(self, raw_data, max_len, nclasses):
-        self.max_len = max_len
-        self.nclasses = nclasses
-        self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-        self.raw_data = raw_data
-        self.reviews, self.labels = self.process_data(raw_data)
+        walk_counters = dict()
+        seqs = []
+        labels = []
 
-    def tokenize(self, data):
-        eos_token_idx = self.tokenizer.convert_tokens_to_ids(self.tokenizer.sep_token)
-        init_token_idx = self.tokenizer.convert_tokens_to_ids(self.tokenizer.cls_token)
+        for sample in data.values():
+            if sample["split"] == self.split:
+                shape_id = sample["shape_id"]
+                if walk_counters.get(shape_id, 0) >= self.num_walks:
+                    continue
 
-        tokenized_data = np.zeros((len(data), self.max_len))
-        for i, text in enumerate(data):
-            tokens = self.tokenizer.tokenize(text)
-            ids = self.tokenizer.convert_tokens_to_ids(tokens)
+                walk_counters[shape_id] = walk_counters.get(shape_id, 0) + 1
+                seq = np.array(sample["dxdydz"])
+                seq_len = seq.shape[0]
 
-            if len(ids) < self.max_len - 1:
-                tokenized_input = [init_token_idx] + ids + [eos_token_idx] * (self.max_len - len(ids) - 1)
-            else:
-                tokenized_input = [init_token_idx] + ids[:self.max_len - 2] + [eos_token_idx]
+                # slice to max walk len
+                seq = seq[:self.max_walk_len, :]
+                # seq = np.concatenate((np.zeros((1, 3)), seq), axis=0)
 
-            tokenized_array = np.array(tokenized_input, dtype=object)
-            tokenized_data[i] = tokenized_array
+                # add padding
+                if seq_len < self.max_walk_len:
+                    seq = np.concatenate((seq, np.zeros((self.max_walk_len - seq_len, 3))), axis=0)
 
-        return tokenized_data
+                # rescale numbers
+                # seq = seq * 1000000
 
-    def process_data(self, raw_data):
-        reviews = [s["text"] for s in raw_data]
-        labels = [s["label"] for s in raw_data]
+                # seq = seq.flatten()
+                # seq = np.expand_dims(seq, axis=1)
+                label = sample["shape_label"]
+                label = label if label < 23 else label - 1
 
-        reviews = self.tokenize(reviews)
+                seqs.append(seq)
+                labels.append(label)
 
-        reviews_tensor = torch.from_numpy(reviews).to(torch.int64)
+        seqs = np.array(seqs)
+        labels = np.array(labels)
+
+        print(len(set(labels)))
+        print(sorted(list(set(labels))))
+        print(seqs.shape)
+        print(labels.shape)
+        seqs_tensor = torch.from_numpy(seqs).to(torch.float)
         labels_tensor = torch.tensor(labels).to(torch.int64)
-        return reviews_tensor, labels_tensor
+        return seqs_tensor, labels_tensor
 
     def __len__(self):
-        return len(self.raw_data)
+        return len(self.labels)
 
     def __getitem__(self, idx):
-        return self.reviews[idx], self.labels[idx]
+        return self.seqs[idx], self.labels[idx]
