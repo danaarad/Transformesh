@@ -47,7 +47,6 @@ class Mesh_Dataset(Dataset):
                 # seq = seq.flatten()
                 # seq = np.expand_dims(seq, axis=1)
                 label = sample["shape_label"]
-                label = label if label < 23 else label - 1
 
                 seqs.append(seq)
                 labels.append(label)
