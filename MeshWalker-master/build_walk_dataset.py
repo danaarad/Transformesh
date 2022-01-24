@@ -126,8 +126,8 @@ def generate_walks_from_dataset(dataset_name, dataset_path, data_split, walk_par
                                 dev_meshes_per_shape=None):
     def get_dir_label(dir_path):
         for shape in shape_labels:
-            delimited_shape = f"/{shape}/"
-            if delimited_shape in str(dir_path):
+            delimited_shape = f"/{shape}"
+            if str(dir_path).endswith(delimited_shape):
                 return shape_labels[shape]
         return None
 
@@ -202,20 +202,20 @@ def get_object_files_in_dir(dir_path):
 
 RANDOM_WALK_PARAMS = {'num_walks_per_mesh': 128, 'walk_len': None, 'walk_len_vertices_ratio': 0.5}
 
-output_json = f"./data/walks/walks_shrec16_test_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V.json "
-generate_walks_from_dataset(dataset_name="shrec16",
-                            dataset_path="./data/shrec_16/",
-                            data_split="test",
-                            walk_params=RANDOM_WALK_PARAMS,
-                            output_file=output_json)
-
-# output_json = f"./data/walks/walks_shrec16_train_dev_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V.json "
+# output_json = f"./data/walks/walks_shrec16_test_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V.json "
 # generate_walks_from_dataset(dataset_name="shrec16",
 #                             dataset_path="./data/shrec_16/",
-#                             data_split="train",
+#                             data_split="test",
 #                             walk_params=RANDOM_WALK_PARAMS,
-#                             output_file=output_json,
-#                             dev_meshes_per_shape=2)
+#                             output_file=output_json)
+
+output_json = f"./data/walks/walks_shrec16_train_dev_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V.json "
+generate_walks_from_dataset(dataset_name="shrec16",
+                            dataset_path="./data/shrec_16/",
+                            data_split="train",
+                            walk_params=RANDOM_WALK_PARAMS,
+                            output_file=output_json,
+                            dev_meshes_per_shape=2)
 
 
 # output_json = f"./data/walks/walks_cubes_test_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V.json "
