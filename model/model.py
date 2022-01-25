@@ -1,10 +1,6 @@
-import math
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from torch.nn import TransformerEncoder, TransformerEncoderLayer
-
-import numpy as np
 
 
 class WalkEmbedding(nn.Module):
@@ -26,7 +22,7 @@ class WalkEmbedding(nn.Module):
         # print(x.shape)
         x = self.emb(x)
         # print(x.shape)
-        cls_tokens = self.cls_token.repeat(self.batch_size, 1, 1)
+        cls_tokens = self.cls_token.repeat(x.shape[0], 1, 1)
         x = torch.cat((cls_tokens, x), 1)
         # print(x.shape)
         x += self.positions
