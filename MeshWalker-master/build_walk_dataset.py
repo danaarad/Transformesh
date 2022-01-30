@@ -88,10 +88,6 @@ def get_mesh_id(dataset, shape, split, file):
     return f"{dataset}_{split}_{shape}_{file}"
 
 
-def get_mesh_label(mesh_id):
-    return
-
-
 def generate_random_walks(mesh_file, num_walks_per_mesh, walk_len=None, walk_len_vertices_ratio=None):
     mesh, mesh_ = load_mesh(mesh_file)
     mesh_data = EasyDict({'vertices': np.asarray(mesh.vertices), 'faces': np.asarray(mesh.triangles)})
@@ -185,12 +181,76 @@ def get_object_files_in_dir(dir_path):
     return file_paths
 
 
-# x = generate_random_walks(mesh_file="./data/shrec_16/centaur/train/T6.obj",
-#                           num_walks_per_mesh=1,
-#                           walk_len=None,
-#                           walk_len_vertices_ratio=0.5)
-# print(x)
+def calc_3d_point_edge(point, other_point):
+    return np.linalg.norm(point - other_point)
 
+
+def calc_3d_point_angles(point_a, point_b, point_c):
+    ba = point_a - point_b  # normalization of vectors
+    bc = point_c - point_b  # normalization of vectors
+    cosine_angle = np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc))
+    angle = np.arccos(cosine_angle)
+    return np.degrees(angle)
+
+
+def random_walk_edge_ratio_features(random_walk_dxdydz):
+    """Returns array of the ratios of following edge lengths in the random walk.
+    This feature is invariant to mesh scale.
+    E.g., for following walk edges e1 and e2 return ratio: e1/e2"""
+    walk_edge_lengths = []
+    for vertex, next_vertex in list(zip(random_walk_dxdydz, random_walk_dxdydz[1:])):
+        # iterate following vertex pairs
+        walk_edge_lengths += [calc_3d_point_edge(vertex, next_vertex)]
+    walk_edge_ratios = []
+    for edge, next_edge in list(zip(walk_edge_lengths, walk_edge_lengths[1:])):
+        walk_edge_ratios += [float(next_edge) / float(edge)]
+    return np.array(walk_edge_ratios)
+
+
+def random_walk_edge_angle_features(random_walk_dxdydz):
+    """Returns array of the degrees between following edges in the random walk.
+    This feature is invariant to mesh rotation.
+    E.g., for following edges e1 and e2, return the angle degree between them"""
+    n = len(random_walk_dxdydz)
+    angle_degrees = []
+    for i in range(n - 2):
+        angle_degrees += [calc_3d_point_angles(point_a=random_walk_dxdydz[i],
+                                               point_b=random_walk_dxdydz[i + 1],
+                                               point_c=random_walk_dxdydz[i + 2])]
+    return np.array(angle_degrees)
+
+
+def random_walk_invariant_features(random_walk_dxdydz):
+    """Get the random walk edge length ratios and angle features,
+    these features are invariant to mesh scale and rotation respectively.
+    Returns numpy array of pairs, (following edges ratio, following edges angle)"""
+    walk_edges_ratios = random_walk_edge_ratio_features(random_walk_dxdydz)
+    walk_edges_angles = random_walk_edge_angle_features(random_walk_dxdydz)
+    return np.stack((walk_edges_ratios, walk_edges_angles), axis=-1)
+
+
+x = generate_random_walks(mesh_file="./data/shrec_16/centaur/train/T6.obj",
+                          num_walks_per_mesh=1,
+                          walk_len=9,
+                          walk_len_vertices_ratio=None)
+
+# print(x['./data/shrec_16/centaur/train/T6.obj__0']["dxdydz"])
+# a = x['./data/shrec_16/centaur/train/T6.obj__0']["dxdydz"][0]
+# b = x['./data/shrec_16/centaur/train/T6.obj__0']["dxdydz"][1]
+# c = x['./data/shrec_16/centaur/train/T6.obj__0']["dxdydz"][2]
+# print(calc_3d_point_edge(a, b))
+# print(calc_3d_point_angles(a, b, c))
+print(random_walk_edge_ratio_features(x['./data/shrec_16/centaur/train/T6.obj__0']["dxdydz"]))
+print(random_walk_edge_angle_features(x['./data/shrec_16/centaur/train/T6.obj__0']["dxdydz"]))
+print(random_walk_invariant_features(x['./data/shrec_16/centaur/train/T6.obj__0']["dxdydz"]))
+print(random_walk_invariant_features(x['./data/shrec_16/centaur/train/T6.obj__0']["dxdydz"]).shape)
+
+# for i in range(2):
+#     print(random_walk_edge_ratio_features(x['./data/shrec_16/centaur/train/T6.obj__0']["dxdydz"][i]))
+#     print(random_walk_edge_angle_features(x['./data/shrec_16/centaur/train/T6.obj__0']["dxdydz"]))
+#     # print(random_walk_invariant_features(x['./data/shrec_16/centaur/train/T6.obj__0']["dxdydz"][i]))
+#     print("i: ", i)
+#     print("********************")
 
 # path = "./data/shrec_16/"
 # get_all_subdirectories(path)
@@ -200,7 +260,7 @@ def get_object_files_in_dir(dir_path):
 #     print(f)
 # print(SHREC16_SHAPE2LABEL)
 
-RANDOM_WALK_PARAMS = {'num_walks_per_mesh': 128, 'walk_len': None, 'walk_len_vertices_ratio': 0.5}
+# RANDOM_WALK_PARAMS = {'num_walks_per_mesh': 128, 'walk_len': None, 'walk_len_vertices_ratio': 0.5}
 
 # output_json = f"./data/walks/walks_shrec16_test_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V.json "
 # generate_walks_from_dataset(dataset_name="shrec16",
@@ -209,13 +269,13 @@ RANDOM_WALK_PARAMS = {'num_walks_per_mesh': 128, 'walk_len': None, 'walk_len_ver
 #                             walk_params=RANDOM_WALK_PARAMS,
 #                             output_file=output_json)
 
-output_json = f"./data/walks/walks_shrec16_train_dev_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V.json "
-generate_walks_from_dataset(dataset_name="shrec16",
-                            dataset_path="./data/shrec_16/",
-                            data_split="train",
-                            walk_params=RANDOM_WALK_PARAMS,
-                            output_file=output_json,
-                            dev_meshes_per_shape=2)
+# output_json = f"./data/walks/walks_shrec16_train_dev_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V.json "
+# generate_walks_from_dataset(dataset_name="shrec16",
+#                             dataset_path="./data/shrec_16/",
+#                             data_split="train",
+#                             walk_params=RANDOM_WALK_PARAMS,
+#                             output_file=output_json,
+#                             dev_meshes_per_shape=2)
 
 
 # output_json = f"./data/walks/walks_cubes_test_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V.json "
