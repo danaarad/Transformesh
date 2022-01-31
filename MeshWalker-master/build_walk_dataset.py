@@ -7,6 +7,10 @@ from tqdm import tqdm
 from pathlib import Path, PurePosixPath
 from easydict import EasyDict
 from walks import get_seq_random_walk_random_global_jumps
+import warnings
+warnings.filterwarnings("error")
+warnings.simplefilter('ignore', DeprecationWarning)
+
 
 CUBES_LABELS = [
     'apple', 'bat', 'bell', 'brick', 'camel',
@@ -116,7 +120,7 @@ def generate_random_walks(mesh_file, num_walks_per_mesh, walk_len=None, walk_len
         walks[mesh_walk_id]["jumps"] = jumps
         walks[mesh_walk_id]["dxdydz"] = dxdydz
         walk_coordinates = mesh_data["vertices"][seq]
-        walks[mesh_walk_id]["edges_ratio_angle"] = random_walk_invariant_features(walk_coordinates)
+        walks[mesh_walk_id]["edges_ratio_angle"] = random_walk_invariant_features(walk_coordinates, dxdydz=dxdydz)
     return walks
 
 
@@ -190,51 +194,68 @@ def calc_3d_point_edge(point, other_point):
 def calc_3d_point_angles(point_a, point_b, point_c):
     ba = point_a - point_b  # normalization of vectors
     bc = point_c - point_b  # normalization of vectors
-    cosine_angle = np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc))
-    angle = np.arccos(cosine_angle)
-    return np.degrees(angle)
+    # random walk was stuck at the same point for two steps
+    cosine_angle = 1 if np.dot(ba, bc) == 0 else np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc))
+    return cosine_angle  # return the cosine, not the angle
+    # avoid computing the angle due to numeric problems
+    # angle = np.arccos(cosine_angle)
+    # return np.degrees(angle)
 
 
-def random_walk_edge_ratio_features(random_walk_dxdydz):
+def random_walk_edge_ratio_features(random_walk_xyz, dxdydz=None):
     """Returns array of the ratios of following edge lengths in the random walk.
     This feature is invariant to mesh scale.
     E.g., for following walk edges e1 and e2 return ratio: e1/e2"""
     walk_edge_lengths = []
-    for vertex, next_vertex in list(zip(random_walk_dxdydz, random_walk_dxdydz[1:])):
+    for vertex, next_vertex in list(zip(random_walk_xyz, random_walk_xyz[1:])):
         # iterate following vertex pairs
         walk_edge_lengths += [calc_3d_point_edge(vertex, next_vertex)]
+        # ################
+        # edge_len = calc_3d_point_edge(vertex, next_vertex)
+        # if edge_len == 0:
+        #     print(edge_len == 0)
+        #     print("vertex: ", vertex)
+        #     print("next_vertex: ", next_vertex)
+        #     print(random_walk_xyz)
+        #     print("******************")
+        #     print(dxdydz)
+        # ###################
     walk_edge_ratios = []
     for edge, next_edge in list(zip(walk_edge_lengths, walk_edge_lengths[1:])):
-        walk_edge_ratios += [np.true_divide(next_edge, edge)]  #[float(next_edge) / float(edge)]
+        if edge == 0:
+            # random walk was stuck at the same point for two steps
+            walk_edge_ratios += [0]
+        else:
+            walk_edge_ratios += [np.true_divide(next_edge, edge)]  #[float(next_edge) / float(edge)]
     return np.array(walk_edge_ratios)
 
 
-def random_walk_edge_angle_features(random_walk_dxdydz):
+def random_walk_edge_angle_features(random_walk_xyz):
     """Returns array of the degrees between following edges in the random walk.
     This feature is invariant to mesh rotation.
     E.g., for following edges e1 and e2, return the angle degree between them"""
-    n = len(random_walk_dxdydz)
+    n = len(random_walk_xyz)
     angle_degrees = []
     for i in range(n - 2):
-        angle_degrees += [calc_3d_point_angles(point_a=random_walk_dxdydz[i],
-                                               point_b=random_walk_dxdydz[i + 1],
-                                               point_c=random_walk_dxdydz[i + 2])]
+        angle_degrees += [calc_3d_point_angles(point_a=random_walk_xyz[i],
+                                               point_b=random_walk_xyz[i + 1],
+                                               point_c=random_walk_xyz[i + 2])]
     return np.array(angle_degrees)
 
 
-def random_walk_invariant_features(random_walk_dxdydz):
+def random_walk_invariant_features(random_walk_xyz, dxdydz=None):
     """Get the random walk edge length ratios and angle features,
     these features are invariant to mesh scale and rotation respectively.
     Returns numpy array of pairs, (following edges ratio, following edges angle)"""
-    walk_edges_ratios = random_walk_edge_ratio_features(random_walk_dxdydz)
-    walk_edges_angles = random_walk_edge_angle_features(random_walk_dxdydz)
+    walk_edges_ratios = random_walk_edge_ratio_features(random_walk_xyz, dxdydz=dxdydz)
+    walk_edges_angles = random_walk_edge_angle_features(random_walk_xyz)
     return np.stack((walk_edges_ratios, walk_edges_angles), axis=-1)
 
 
-x = generate_random_walks(mesh_file="./data/shrec_16/centaur/train/T6.obj",
-                          num_walks_per_mesh=1,
-                          walk_len=9,
-                          walk_len_vertices_ratio=None)
+# x = generate_random_walks(mesh_file="./data/shrec_16/centaur/train/T6.obj",
+#                           num_walks_per_mesh=1,
+#                           walk_len=9,
+#                           walk_len_vertices_ratio=None)
 
 # print(x['./data/shrec_16/centaur/train/T6.obj__0']["dxdydz"])
 # a = x['./data/shrec_16/centaur/train/T6.obj__0']["dxdydz"][0]
@@ -242,10 +263,10 @@ x = generate_random_walks(mesh_file="./data/shrec_16/centaur/train/T6.obj",
 # c = x['./data/shrec_16/centaur/train/T6.obj__0']["dxdydz"][2]
 # print(calc_3d_point_edge(a, b))
 # print(calc_3d_point_angles(a, b, c))
-print(random_walk_edge_ratio_features(x['./data/shrec_16/centaur/train/T6.obj__0']["dxdydz"]))
-print(random_walk_edge_angle_features(x['./data/shrec_16/centaur/train/T6.obj__0']["dxdydz"]))
-print(random_walk_invariant_features(x['./data/shrec_16/centaur/train/T6.obj__0']["dxdydz"]))
-print(random_walk_invariant_features(x['./data/shrec_16/centaur/train/T6.obj__0']["dxdydz"]).shape)
+# print(random_walk_edge_ratio_features(x['./data/shrec_16/centaur/train/T6.obj__0']["dxdydz"]))
+# print(random_walk_edge_angle_features(x['./data/shrec_16/centaur/train/T6.obj__0']["dxdydz"]))
+# print(random_walk_invariant_features(x['./data/shrec_16/centaur/train/T6.obj__0']["dxdydz"]))
+# print(random_walk_invariant_features(x['./data/shrec_16/centaur/train/T6.obj__0']["dxdydz"]).shape)
 
 # for i in range(2):
 #     print(random_walk_edge_ratio_features(x['./data/shrec_16/centaur/train/T6.obj__0']["dxdydz"][i]))
@@ -262,22 +283,22 @@ print(random_walk_invariant_features(x['./data/shrec_16/centaur/train/T6.obj__0'
 #     print(f)
 # print(SHREC16_SHAPE2LABEL)
 
-# RANDOM_WALK_PARAMS = {'num_walks_per_mesh': 128, 'walk_len': None, 'walk_len_vertices_ratio': 0.5}
+RANDOM_WALK_PARAMS = {'num_walks_per_mesh': 128, 'walk_len': None, 'walk_len_vertices_ratio': 0.5}
 
-# output_json = f"./data/walks/walks_shrec16_test_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V.json"
-# generate_walks_from_dataset(dataset_name="shrec16",
-#                             dataset_path="./data/shrec_16/",
-#                             data_split="test",
-#                             walk_params=RANDOM_WALK_PARAMS,
-#                             output_file=output_json)
+output_json = f"./data/walks/walks_shrec16_test_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V.json"
+generate_walks_from_dataset(dataset_name="shrec16",
+                            dataset_path="./data/shrec_16/",
+                            data_split="test",
+                            walk_params=RANDOM_WALK_PARAMS,
+                            output_file=output_json)
 
-# output_json = f"./data/walks/walks_shrec16_train_dev_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V.json"
-# generate_walks_from_dataset(dataset_name="shrec16",
-#                             dataset_path="./data/shrec_16/",
-#                             data_split="train",
-#                             walk_params=RANDOM_WALK_PARAMS,
-#                             output_file=output_json,
-#                             dev_meshes_per_shape=2)
+output_json = f"./data/walks/walks_shrec16_train_dev_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V.json"
+generate_walks_from_dataset(dataset_name="shrec16",
+                            dataset_path="./data/shrec_16/",
+                            data_split="train",
+                            walk_params=RANDOM_WALK_PARAMS,
+                            output_file=output_json,
+                            dev_meshes_per_shape=2)
 
 #
 # output_json = f"./data/walks/walks_cubes_test_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V.json"
