@@ -115,7 +115,8 @@ def generate_random_walks(mesh_file, num_walks_per_mesh, walk_len=None, walk_len
         walks[mesh_walk_id]["seq"] = seq
         walks[mesh_walk_id]["jumps"] = jumps
         walks[mesh_walk_id]["dxdydz"] = dxdydz
-        walks[mesh_walk_id]["edges_ratio_angle"] = random_walk_invariant_features(dxdydz)
+        walk_coordinates = mesh_data["vertices"][seq]
+        walks[mesh_walk_id]["edges_ratio_angle"] = random_walk_invariant_features(walk_coordinates)
     return walks
 
 
@@ -204,7 +205,7 @@ def random_walk_edge_ratio_features(random_walk_dxdydz):
         walk_edge_lengths += [calc_3d_point_edge(vertex, next_vertex)]
     walk_edge_ratios = []
     for edge, next_edge in list(zip(walk_edge_lengths, walk_edge_lengths[1:])):
-        walk_edge_ratios += [np.true_divide(next_edge, edge)] #[float(next_edge) / float(edge)]
+        walk_edge_ratios += [np.true_divide(next_edge, edge)]  #[float(next_edge) / float(edge)]
     return np.array(walk_edge_ratios)
 
 
@@ -263,14 +264,14 @@ print(random_walk_invariant_features(x['./data/shrec_16/centaur/train/T6.obj__0'
 
 # RANDOM_WALK_PARAMS = {'num_walks_per_mesh': 128, 'walk_len': None, 'walk_len_vertices_ratio': 0.5}
 
-# output_json = f"./data/walks/walks_shrec16_test_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V.json "
+# output_json = f"./data/walks/walks_shrec16_test_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V.json"
 # generate_walks_from_dataset(dataset_name="shrec16",
 #                             dataset_path="./data/shrec_16/",
 #                             data_split="test",
 #                             walk_params=RANDOM_WALK_PARAMS,
 #                             output_file=output_json)
 
-# output_json = f"./data/walks/walks_shrec16_train_dev_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V.json "
+# output_json = f"./data/walks/walks_shrec16_train_dev_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V.json"
 # generate_walks_from_dataset(dataset_name="shrec16",
 #                             dataset_path="./data/shrec_16/",
 #                             data_split="train",
@@ -279,14 +280,14 @@ print(random_walk_invariant_features(x['./data/shrec_16/centaur/train/T6.obj__0'
 #                             dev_meshes_per_shape=2)
 
 #
-# output_json = f"./data/walks/walks_cubes_test_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V.json "
+# output_json = f"./data/walks/walks_cubes_test_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V.json"
 # generate_walks_from_dataset(dataset_name="cubes",
 #                             dataset_path="./data/cubes/",
 #                             data_split="test",
 #                             walk_params=RANDOM_WALK_PARAMS,
 #                             output_file=output_json)
 #
-# output_json = f"./data/walks/walks_cubes_train_dev_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V.json "
+# output_json = f"./data/walks/walks_cubes_train_dev_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V.json"
 # generate_walks_from_dataset(dataset_name="cubes",
 #                             dataset_path="./data/cubes/",
 #                             data_split="train",
