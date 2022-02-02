@@ -1,3 +1,4 @@
+import math
 import torch
 import torch.nn as nn
 from torch.nn import TransformerEncoder, TransformerEncoderLayer
@@ -41,6 +42,7 @@ class TransformerModel(nn.Module):
             nhead=args.nhead,
             dim_feedforward=args.nhid,
             dropout=args.dropout,
+            activation=args.activation,
             batch_first=True
         ).to(args.device)
         self.transformer_encoder = TransformerEncoder(encoder_layers, args.nlayers)

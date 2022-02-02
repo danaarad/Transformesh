@@ -64,19 +64,23 @@ def evaluate_acc_by_majority(args, model, data):
         for index, (shape_id, data) in enumerate(walks_by_mesh.items()):
             label = mesh_to_labels[shape_id]
             labels = torch.tensor([label]).to(torch.int64)
-            labels = labels.tile((args.num_walks, 1))
+            labels = labels.tile((args.num_walks, 1))  # TODO:
 
             data, labels = data.to(args.device), labels.to(args.device)
             output = model(data)
-            output = output[:, 0, :]
+            output = output[:, 0, :]  # TODO:
             output = torch.squeeze(output)
             output = torch.softmax(output, dim=1)
             data, labels, output = data.to("cpu"), labels.to("cpu"), output.to("cpu")
 
             preds_by_class = [0] * args.nclasses
             for i in range(len(output)):
-                pred = np.argmax(output[i])
-                preds_by_class[pred] += 1
+                # pred = np.argmax(output[i])
+                # preds_by_class[pred] += 1
+                ##############
+                for pred in range(output.shape[1]):
+                    preds_by_class[pred] = torch.sum(output[:, pred]).cpu().detach().numpy()
+                #################
             majority_class = np.argmax(preds_by_class)
             if majority_class == label:
                 total_matches += 1
@@ -99,7 +103,7 @@ def preprocess_for_eval_by_majority(args, data):
         if shape_id not in walks_by_mesh:
             walks_by_mesh[shape_id] = []
 
-        seq = np.array(sample["dxdydz"])
+        seq = np.array(sample[args.features_type])
         seq_len = seq.shape[0]
 
         # slice to max walk len
@@ -158,8 +162,6 @@ def train_epoch(args, model, criterion, optimizer, epoch, dataloader):
 
 def main():
     parser = argparse.ArgumentParser(description='PyTorch Transformer Implementation')
-    parser.add_argument('--data', type=str, default='./data/imdb',
-                        help='location of the data corpus')
     parser.add_argument('--save', type=str, default='model.pt',
                         help='path to save the final model')
 
@@ -178,19 +180,23 @@ def main():
                         help='initial momentum')
     parser.add_argument('--dropout', type=float, default=0.2,
                         help='dropout applied to layers (0 = no dropout)')
+    parser.add_argument('--activation', type=str, default="gelu",
+                        help='the activation function of the Transformer layer, can be a string ("relu" or "gelu")')
 
     parser.add_argument('--epochs', type=int, default=40,
                         help='upper epoch limit')
     parser.add_argument('--batch_size', type=int, default=50, metavar='N',
                         help='batch size')
     parser.add_argument('--max_walk_len', type=int, default=125,
-                        help='mex walk length to use')
+                        help='max walk length to use')
     parser.add_argument('--num_walks', type=int, default=128,
                         help='number of walks to use per mesh')
     parser.add_argument('--step_features', type=int, default=3,
-                        help='number of featuers in the representation of each step. default is 3 for dxdydz')
+                        help='number of features in the representation of each step. default is 3 for dxdydz')
     parser.add_argument('--nclasses', type=int, default=30,
                         help='number of classification classes')
+    parser.add_argument('--features_type', type=str, default="dxdydz",
+                        help='random walk features to use, either: dxdydz or edges_ratio_angle')
 
     parser.add_argument('--train_json', type=str, default="./walks_shrec16_train_dev_walks_128_ratio_05V.json",
                         help='path to file containing data. should be JSON.')
@@ -203,19 +209,19 @@ def main():
                         help='report interval')
     parser.add_argument('--seed', type=int, default=42,
                         help='random seed')
-    parser.add_argument('--cuda', action='store_true', default=True,
-                        help='use CUDA')
+    parser.add_argument('--cuda', type=int, default=None, help='CUDA number')
 
     args = parser.parse_args()
 
     # Set the random seed manually for reproducibility.
     torch.manual_seed(args.seed)
     if torch.cuda.is_available():
-        if not args.cuda:
+        if args.cuda is None:
             print("WARNING: You have a CUDA device, so you should probably run with --cuda")
 
-    args.device = torch.device("cuda:2" if args.cuda else "cpu")
+    args.device = torch.device(f"cuda:{args.cuda}" if args.cuda else "cpu")
     random.seed(args.seed)
+
 
     ###############################################################################
     # Build the model
@@ -265,7 +271,7 @@ def main():
             dev_acc = evaluate_acc_by_majority(args, model, dev_data)
 
             print('-' * 89)
-            print('| end of epoch {:3d} | time: {:5.2f}s | train accuracy {:5.3f} | dev accuracy {:5.3f}'.format(
+            print('| end of epoch {:3d} | time: {:5.2f}s | train accuracy {:5.4f} | dev accuracy {:5.4f}'.format(
                 epoch, (time.time() - epoch_start_time), train_acc, dev_acc))
             print('-' * 89)
             # Save the model if the validation loss is the best we've seen so far.
@@ -278,7 +284,7 @@ def main():
             best_model = torch.load(f)
         test_acc = evaluate_acc_by_majority(args, best_model, test_data)
         print('-' * 89)
-        print('| best model accuracy on test set: {:5.2f} '.format(test_acc))
+        print('| best model accuracy on test set: {:5.4f} '.format(test_acc))
         print('-' * 89)
 
     except KeyboardInterrupt:

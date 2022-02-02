@@ -12,6 +12,7 @@ class Mesh_Dataset(Dataset):
         self.num_walks = args.num_walks
         self.max_walk_len = args.max_walk_len
         self.step_features = args.step_features
+        self.features_type = args.features_type
         self.nclasses = args.nclasses
         self.seqs, self.labels = self.process_data()
 
@@ -40,7 +41,7 @@ class Mesh_Dataset(Dataset):
                     continue
 
                 walk_counters[shape_id] = walk_counters.get(shape_id, 0) + 1
-                seq = np.array(sample["dxdydz"])
+                seq = np.array(sample[self.features_type])
                 seq_len = seq.shape[0]
 
                 # slice to max walk len
