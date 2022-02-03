@@ -291,35 +291,35 @@ def random_walk_invariant_features(random_walk_xyz, dxdydz=None):
 #     print(f)
 # print(SHREC16_SHAPE2LABEL)
 
-RANDOM_WALK_PARAMS = {'num_walks_per_mesh': 128, 'walk_len': None, 'walk_len_vertices_ratio': 0.5}
+RANDOM_WALK_PARAMS = {'num_walks_per_mesh': 1024, 'walk_len': None, 'walk_len_vertices_ratio': 1}
 
-# output_json = f"./data/walks/walks_shrec16_test_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V_scaled.json"
-# generate_walks_from_dataset(dataset_name="shrec16",
-#                             dataset_path="./data/shrec_16/",
-#                             data_split="test",
-#                             walk_params=RANDOM_WALK_PARAMS,
-#                             output_file=output_json)
-#
-# output_json = f"./data/walks/walks_shrec16_train_dev_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V_scaled.json"
-# generate_walks_from_dataset(dataset_name="shrec16",
-#                             dataset_path="./data/shrec_16/",
-#                             data_split="train",
-#                             walk_params=RANDOM_WALK_PARAMS,
-#                             output_file=output_json,
-#                             dev_meshes_per_shape=2)
-
-#
-output_json = f"./data/walks/walks_cubes_test_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V_scaled.json"
-generate_walks_from_dataset(dataset_name="cubes",
-                            dataset_path="./data/cubes/",
+output_json = f"./data/walks/walks_shrec16_test_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_1V_scaled.json"
+generate_walks_from_dataset(dataset_name="shrec16",
+                            dataset_path="./data/shrec_16/",
                             data_split="test",
                             walk_params=RANDOM_WALK_PARAMS,
                             output_file=output_json)
 
-output_json = f"./data/walks/walks_cubes_train_dev_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V.json"
-generate_walks_from_dataset(dataset_name="cubes",
-                            dataset_path="./data/cubes/",
+output_json = f"./data/walks/walks_shrec16_train_dev_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_1V_scaled.json"
+generate_walks_from_dataset(dataset_name="shrec16",
+                            dataset_path="./data/shrec_16/",
                             data_split="train",
                             walk_params=RANDOM_WALK_PARAMS,
                             output_file=output_json,
-                            dev_meshes_per_shape=15)
+                            dev_meshes_per_shape=2)
+
+#
+# output_json = f"./data/walks/walks_cubes_test_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V_scaled.json"
+# generate_walks_from_dataset(dataset_name="cubes",
+#                             dataset_path="./data/cubes/",
+#                             data_split="test",
+#                             walk_params=RANDOM_WALK_PARAMS,
+#                             output_file=output_json)
+#
+# output_json = f"./data/walks/walks_cubes_train_dev_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V_scaled.json"
+# generate_walks_from_dataset(dataset_name="cubes",
+#                             dataset_path="./data/cubes/",
+#                             data_split="train",
+#                             walk_params=RANDOM_WALK_PARAMS,
+#                             output_file=output_json,
+#                             dev_meshes_per_shape=15)

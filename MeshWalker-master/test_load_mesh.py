@@ -1,7 +1,11 @@
 import trimesh
 import open3d
 import numpy as np
+import pyvista as pv
+from pyvista import examples
 from easydict import EasyDict
+
+# from build_walk_dataset import norm_model
 from walks import get_seq_random_walk_random_global_jumps
 
 
@@ -49,20 +53,84 @@ def load_mesh(model_fn, classification=True):
     return mesh, mesh_
 
 
+def data_augmentation_rotation_test(vertices, max_rot_ang_deg):
+  x = np.random.uniform(-max_rot_ang_deg, max_rot_ang_deg) * np.pi / 180
+  y = np.random.uniform(-max_rot_ang_deg, max_rot_ang_deg) * np.pi / 180
+  z = np.random.uniform(-max_rot_ang_deg, max_rot_ang_deg) * np.pi / 180
+  A = np.array(((np.cos(x), -np.sin(x), 0),
+                (np.sin(x), np.cos(x), 0),
+                (0, 0, 1)),
+               dtype=vertices.dtype)
+  B = np.array(((np.cos(y), 0, -np.sin(y)),
+                (0, 1, 0),
+                (np.sin(y), 0, np.cos(y))),
+               dtype=vertices.dtype)
+  C = np.array(((1, 0, 0),
+                (0, np.cos(z), -np.sin(z)),
+                (0, np.sin(z), np.cos(z))),
+               dtype=vertices.dtype)
+  np.dot(vertices, A, out=vertices)
+  np.dot(vertices, B, out=vertices)
+  np.dot(vertices, C, out=vertices)
+  return vertices
+
+
+def norm_mesh_test(vertices):
+    # Move the mesh model so the bbox center will be at (0, 0, 0)
+    mean = np.mean((np.min(vertices, axis=0), np.max(vertices, axis=0)), axis=0)
+    vertices -= mean
+    # Scale mesh model to fit into the unit ball
+    norm_with = np.max(vertices)
+    vertices /= norm_with
+    return vertices
+
 filename = "./data/shrec_16/centaur/train/T6.obj"
-x, x_ = load_mesh(filename)
+filename = "./data/shrec_16/rabbit/train/T594.obj"
+
+# filename = examples.planefile
+mesh = pv.read(filename)
+edges = mesh.extract_all_edges()
+print(edges)
+
+vertices = np.array([[0, 0, 0], [1, 0, 0], [1, 0.5, 0], [0, 0.5, 0]])
+lines = np.hstack([[2, 0, 1], [2, 1, 2]])
+walk_mesh = pv.PolyData(vertices, lines=lines)
+cpos = walk_mesh.plot(show_edges=True, color='black', background='white',)
+
+# edges.lines  # line connectivity stored here
+# edges.plot(scalars=np.random.random(edges.n_faces), line_width=5, cmap='jet')
+# edges.plot(scalars=np.random.random(edges.n_faces), line_width=5)
+
+# cpos = mesh.plot(show_edges=True, color='yellow', background='white',)
+
+# p = pv.Plotter()
+# p.add_mesh(mesh, color=True)
+# p.add_mesh(edges, color="red", line_width=5)
+# p.camera.zoom(1.5)
+# p.show()
+
+# x, x_ = load_mesh(filename)
 # x_.show()
-mesh = x_
+
+# new_x_ = x_
+# new_x_.vertices = data_augmentation_rotation_test(norm_mesh_test(new_x_.vertices), 90)
+# new_x_.show()
+#
+# new_x_ = x_
+# new_x_.vertices = data_augmentation_rotation_test(norm_mesh_test(new_x_.vertices), 90)
+# new_x_.show()
+
+# mesh = x_
 # Todo: functions for coloring
 # for facet in mesh.faces:
 #     mesh.visual.face_colors[facet] = trimesh.visual.random_color()
 # x_.show()
-color = trimesh.visual.random_color()
-random_walk_to_color = [132, 136, 129, 59, 58, 220, 9, 57, 161, 69, 67, 107, 149, 107, 67, 2, 184, 131, 41, 238, 143, 166, 211, 48, 22, 134, 202, 146, 226, 228, 199, 126, 47, 11, 247, 108, 37, 99, 27, 217, 145, 224, 124, 31, 218, 236, 174, 73, 53, 212, 103, 21, 44, 232, 241, 33, 60, 120, 35, 178, 135, 61, 92, 52, 221, 70, 152, 37, 99, 108, 226, 115, 89, 87, 240, 199, 105, 72, 126, 150, 177, 179, 42, 4, 88, 157, 176, 143, 238, 59, 129, 57, 9, 149, 161, 69, 107, 220, 58, 2, 207, 242, 119, 41, 238, 166, 211, 48, 0, 239, 222, 217, 248, 64, 27, 99, 224, 22, 134, 88, 177, 179, 118, 42, 4, 42, 128, 125, 176, 209, 104, 202, 81, 97, 89, 199, 218, 194, 124, 68, 243, 18, 156, 141, 236, 188, 216, 212, 103, 21, 241, 172]#, 28, 139, 181, 204, 130, 44, 147, 103, 53, 26, 117, 21, 232, 241, 33, 35, 60, 175, 240, 73, 212, 216, 174, 236, 188, 237, 31, 114, 156, 141, 194, 218, 105, 199, 126, 150, 72, 150, 74, 138, 6, 54, 169, 246, 235, 56, 168, 66, 200, 16, 163, 140, 171, 214, 5, 219, 5, 123, 45, 29, 130, 204, 181, 13, 193, 144, 86, 165, 196, 90, 79, 250, 160, 203, 43, 162, 49, 142, 14, 223, 148, 223, 14, 185, 111, 83, 229, 80, 51, 158, 154, 71, 203, 66, 200, 5, 163, 219, 214, 171, 29, 16, 140, 16, 29, 45, 123, 130, 13, 193, 160, 85, 79, 155, 55, 234, 62, 173, 165, 86, 98, 46, 78, 109, 241, 33, 60, 117, 26, 53, 103, 21, 147, 14, 185, 32, 50, 246, 6, 138, 47, 11, 228, 115, 226, 108, 99, 37, 155]
-
-for v in random_walk_to_color: #range(79):
-    mesh.visual.vertex_colors[v] = color
-x_.show()
+# color = trimesh.visual.random_color()
+# random_walk_to_color = [132, 136, 129, 59, 58, 220, 9, 57, 161, 69, 67, 107, 149, 107, 67, 2, 184, 131, 41, 238, 143, 166, 211, 48, 22, 134, 202, 146, 226, 228, 199, 126, 47, 11, 247, 108, 37, 99, 27, 217, 145, 224, 124, 31, 218, 236, 174, 73, 53, 212, 103, 21, 44, 232, 241, 33, 60, 120, 35, 178, 135, 61, 92, 52, 221, 70, 152, 37, 99, 108, 226, 115, 89, 87, 240, 199, 105, 72, 126, 150, 177, 179, 42, 4, 88, 157, 176, 143, 238, 59, 129, 57, 9, 149, 161, 69, 107, 220, 58, 2, 207, 242, 119, 41, 238, 166, 211, 48, 0, 239, 222, 217, 248, 64, 27, 99, 224, 22, 134, 88, 177, 179, 118, 42, 4, 42, 128, 125, 176, 209, 104, 202, 81, 97, 89, 199, 218, 194, 124, 68, 243, 18, 156, 141, 236, 188, 216, 212, 103, 21, 241, 172]#, 28, 139, 181, 204, 130, 44, 147, 103, 53, 26, 117, 21, 232, 241, 33, 35, 60, 175, 240, 73, 212, 216, 174, 236, 188, 237, 31, 114, 156, 141, 194, 218, 105, 199, 126, 150, 72, 150, 74, 138, 6, 54, 169, 246, 235, 56, 168, 66, 200, 16, 163, 140, 171, 214, 5, 219, 5, 123, 45, 29, 130, 204, 181, 13, 193, 144, 86, 165, 196, 90, 79, 250, 160, 203, 43, 162, 49, 142, 14, 223, 148, 223, 14, 185, 111, 83, 229, 80, 51, 158, 154, 71, 203, 66, 200, 5, 163, 219, 214, 171, 29, 16, 140, 16, 29, 45, 123, 130, 13, 193, 160, 85, 79, 155, 55, 234, 62, 173, 165, 86, 98, 46, 78, 109, 241, 33, 60, 117, 26, 53, 103, 21, 147, 14, 185, 32, 50, 246, 6, 138, 47, 11, 228, 115, 226, 108, 99, 37, 155]
+#
+# for v in random_walk_to_color: #range(79):
+#     mesh.visual.vertex_colors[v] = color
+# x_.show()
 
 # color = trimesh.visual.random_color()
 # for facet in mesh.faces:
@@ -72,6 +140,8 @@ x_.show()
 # mesh_data = EasyDict({'vertices': np.asarray(mesh.vertices), 'faces': np.asarray(mesh.triangles)})
 # print(len(mesh_data['vertices']))
 # print(len(mesh_data['faces']))
+# print(mesh_data['vertices'])
+# print(norm_model(mesh_data['vertices']))
 #
 # m = {}
 # for k, v in mesh_data.items():
