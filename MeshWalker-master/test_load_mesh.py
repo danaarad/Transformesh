@@ -2,6 +2,7 @@ import trimesh
 import open3d
 import numpy as np
 import pyvista as pv
+import json
 from pyvista import examples
 from easydict import EasyDict
 
@@ -85,17 +86,40 @@ def norm_mesh_test(vertices):
     return vertices
 
 filename = "./data/shrec_16/centaur/train/T6.obj"
-filename = "./data/shrec_16/rabbit/train/T594.obj"
+filename = "./data/shrec_16/alien/test/T124.obj"
+key = "data/shrec_16/alien/test/T124.obj__0"
 
-# filename = examples.planefile
+with open("./data/walks/walks_shrec16_test_walks_128_ratio_05V.json", "rb") as f:
+    data = json.load(f)
+walk_edges_seq = np.hstack(data[key]["seq"])
+list_arr = []
+for i in range(len(walk_edges_seq)-1):
+    # print(walk_edges_seq[i])
+    list_arr += [[2, walk_edges_seq[i], walk_edges_seq[i+1]]]
+walk_edges = np.hstack(list_arr)
+# print(walk_edges)
+x, x_ = load_mesh(filename)
+walk_vertices = np.array(x_.vertices)
+# print(walk_vertices)
+# walk_edges = np.hstack([[2, 232, 14], [2, 14, 187], [2, 187, 242], [2, 242, 202], [2, 202, 139], [2, 139, 234]])
+walk_mesh = pv.PolyData(walk_vertices, lines=walk_edges)
+# cpos = walk_mesh.plot(show_edges=True, color='black', background='white',)
+
 mesh = pv.read(filename)
-edges = mesh.extract_all_edges()
-print(edges)
+p = pv.Plotter()
+p.add_mesh(mesh, color=True)
+p.add_mesh(walk_mesh, color="red", line_width=5)
+p.camera.zoom(1.5)
+p.show()
 
-vertices = np.array([[0, 0, 0], [1, 0, 0], [1, 0.5, 0], [0, 0.5, 0]])
-lines = np.hstack([[2, 0, 1], [2, 1, 2]])
-walk_mesh = pv.PolyData(vertices, lines=lines)
-cpos = walk_mesh.plot(show_edges=True, color='black', background='white',)
+# mesh = pv.read(filename)
+# edges = mesh.extract_all_edges()
+# print(edges)
+#
+# vertices = np.array([[0, 0, 0], [1, 0, 0], [1, 0.5, 0], [0, 0.5, 0]])
+# lines = np.hstack([[2, 0, 1], [2, 1, 2]])
+# walk_mesh = pv.PolyData(vertices, lines=lines)
+# cpos = walk_mesh.plot(show_edges=True, color='black', background='white',)
 
 # edges.lines  # line connectivity stored here
 # edges.plot(scalars=np.random.random(edges.n_faces), line_width=5, cmap='jet')
