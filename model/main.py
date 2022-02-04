@@ -266,8 +266,9 @@ def main():
         for epoch in range(1, args.epochs + 1):
             epoch_start_time = time.time()
             train_epoch(args, model, criterion, optimizer, epoch, train_dataloader)
-
+            # print("train_acc = evaluate_acc_by_majority(args, model, train_data)")########
             train_acc = evaluate_acc_by_majority(args, model, train_data)
+            # print("dev_acc = evaluate_acc_by_majority(args, model, dev_data)")  ########
             dev_acc = evaluate_acc_by_majority(args, model, dev_data)
 
             print('-' * 89)
