@@ -195,6 +195,7 @@ def generate_random_walks(mesh_file,
             # print("**********")
             mesh_walk_id = f"{mesh_identifier}__{walk_id}"
             walks[mesh_walk_id] = {}
+            walks[mesh_walk_id]["shape_id"] = mesh_identifier
             walks[mesh_walk_id]["seq"] = seq
             # walks[mesh_walk_id]["jumps"] = jumps
             walks[mesh_walk_id]["dxdydz"] = dxdydz
@@ -233,7 +234,7 @@ def generate_walks_from_dataset(dataset_name, dataset_path, data_split, walk_par
                                                  walk_len_vertices_ratio=walk_params['walk_len_vertices_ratio'],
                                                  data_augment_rotation=data_augment_rotation)
             for walk in random_walks:
-                random_walks[walk]['shape_id'] = obj_path_str
+                random_walks[walk]['shape_id'] = random_walks[walk]["shape_id"]
                 random_walks[walk]['shape_label'] = label
                 random_walks[walk]['split'] = "dev" if object_goes_to_dev_set else data_split
             for walk in random_walks:
