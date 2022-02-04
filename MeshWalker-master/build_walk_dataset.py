@@ -54,8 +54,56 @@ def norm_mesh(vertices):
     mean = np.mean((np.min(vertices, axis=0), np.max(vertices, axis=0)), axis=0)
     vertices -= mean
     # Scale mesh model to fit into the unit ball
-    norm_with = np.max(vertices)
-    vertices /= norm_with
+    norm_width = np.max(vertices)
+    vertices /= norm_width
+    return vertices
+
+
+def rotate_mesh_vertices_by_random_degree(vertices, max_rot_ang_deg):
+    x = np.random.uniform(-max_rot_ang_deg, max_rot_ang_deg) * np.pi / 180
+    y = np.random.uniform(-max_rot_ang_deg, max_rot_ang_deg) * np.pi / 180
+    z = np.random.uniform(-max_rot_ang_deg, max_rot_ang_deg) * np.pi / 180
+    A = np.array(((np.cos(x), -np.sin(x), 0),
+                (np.sin(x), np.cos(x), 0),
+                (0, 0, 1)),
+               dtype=vertices.dtype)
+    B = np.array(((np.cos(y), 0, -np.sin(y)),
+                (0, 1, 0),
+                (np.sin(y), 0, np.cos(y))),
+               dtype=vertices.dtype)
+    C = np.array(((1, 0, 0),
+                (0, np.cos(z), -np.sin(z)),
+                (0, np.sin(z), np.cos(z))),
+               dtype=vertices.dtype)
+    np.dot(vertices, A, out=vertices)
+    np.dot(vertices, B, out=vertices)
+    np.dot(vertices, C, out=vertices)
+    return vertices
+
+
+def rotate_mesh_vertices_by_axis(vertices, rot_ang_deg, axis):
+    x = rot_ang_deg * np.pi / 180
+    y = rot_ang_deg * np.pi / 180
+    z = rot_ang_deg * np.pi / 180
+    assert set(axis).issubset(['x', 'y', 'z'])
+    if 'x' in axis:
+        A = np.array(((np.cos(x), -np.sin(x), 0),
+                      (np.sin(x), np.cos(x), 0),
+                      (0, 0, 1)),
+                     dtype=vertices.dtype)
+        np.dot(vertices, A, out=vertices)
+    if 'y' in axis:
+        B = np.array(((np.cos(y), 0, -np.sin(y)),
+                      (0, 1, 0),
+                      (np.sin(y), 0, np.cos(y))),
+                     dtype=vertices.dtype)
+        np.dot(vertices, B, out=vertices)
+    if 'z' in axis:
+        C = np.array(((1, 0, 0),
+                      (0, np.cos(z), -np.sin(z)),
+                      (0, np.sin(z), np.cos(z))),
+                     dtype=vertices.dtype)
+        np.dot(vertices, C, out=vertices)
     return vertices
 
 
@@ -102,41 +150,61 @@ def get_mesh_id(dataset, shape, split, file):
     return f"{dataset}_{split}_{shape}_{file}"
 
 
-def generate_random_walks(mesh_file, num_walks_per_mesh, walk_len=None, walk_len_vertices_ratio=None):
+def generate_random_walks(mesh_file,
+                          num_walks_per_mesh,
+                          walk_len=None,
+                          walk_len_vertices_ratio=None,
+                          data_augment_rotation=None):
     mesh, mesh_ = load_mesh(mesh_file)
     # normalize mesh vertices to center unit ball for scaling issues
     mesh_data = EasyDict({'vertices': norm_mesh(np.asarray(mesh.vertices)), 'faces': np.asarray(mesh.triangles)})
-    m = {}
-    for k, v in mesh_data.items():
-        m[k] = v
-    prepare_mesh_edges(m)
-    mesh_extra = {'n_vertices': m["vertices"].shape[0], 'edges': m['edges']}
-    walks = {}
-    # set the walk len to the ratio ov the number of vertices:
-    walk_len = int(
-        mesh_extra['n_vertices'] * walk_len_vertices_ratio) if walk_len_vertices_ratio is not None else walk_len
-    for walk_id in range(num_walks_per_mesh):
-        f0 = np.random.randint(mesh_data["vertices"].shape[0])  # Get walk starting point
-        seq, jumps = get_seq_random_walk_random_global_jumps(mesh_extra,
-                                                             f0,
-                                                             walk_len)  # Get walk indices (and jump indications)
-        dxdydz = fill_dxdydz_features(mesh_data["vertices"], mesh_extra, seq, jumps, walk_len)
-        # print("seq: ", seq)
-        # print("jumps: ", jumps)
-        # print("dxdydz: ", dxdydz)
-        # print("**********")
-        mesh_walk_id = f"{mesh_file}__{walk_id}"
-        walks[mesh_walk_id] = {}
-        walks[mesh_walk_id]["seq"] = seq
-        walks[mesh_walk_id]["jumps"] = jumps
-        walks[mesh_walk_id]["dxdydz"] = dxdydz
-        walk_coordinates = mesh_data["vertices"][seq]
-        walks[mesh_walk_id]["edges_ratio_angle"] = random_walk_invariant_features(walk_coordinates, dxdydz=dxdydz)
+    augmented_meshes = [{"mesh_data": mesh_data, "mesh_identifier": mesh_file}]
+    if data_augment_rotation:
+        for ax in ['x', 'y', 'z']:
+            mesh_to_rotate, _ = load_mesh(mesh_file)
+            rotated_normalized_vertices = rotate_mesh_vertices_by_random_degree(
+                vertices=rotate_mesh_vertices_by_axis(
+                    vertices=norm_mesh(np.asarray(mesh_to_rotate.vertices)),
+                    rot_ang_deg=180,
+                    axis=[ax]),
+                max_rot_ang_deg=10)
+            rotated_mesh_data = EasyDict({'vertices': rotated_normalized_vertices, 'faces': np.asarray(mesh.triangles)})
+            mesh_identifier = mesh_file.replace(".obj", f"__rotated_{ax}.obj")
+            augmented_meshes += [{"mesh_data": rotated_mesh_data, "mesh_identifier": mesh_identifier}]
+    walks = {}  # dictionary from mesh to all of its walks
+    for mesh_dict in augmented_meshes:
+        mesh_data = mesh_dict["mesh_data"]
+        mesh_identifier = mesh_dict["mesh_identifier"]
+        m = {}
+        for k, v in mesh_data.items():
+            m[k] = v
+        prepare_mesh_edges(m)
+        mesh_extra = {'n_vertices': m["vertices"].shape[0], 'edges': m['edges']}
+        # set the walk len to the ratio ov the number of vertices:
+        walk_len = int(
+            mesh_extra['n_vertices'] * walk_len_vertices_ratio) if walk_len_vertices_ratio is not None else walk_len
+        for walk_id in range(num_walks_per_mesh):
+            f0 = np.random.randint(mesh_data["vertices"].shape[0])  # Get walk starting point
+            seq, jumps = get_seq_random_walk_random_global_jumps(mesh_extra,
+                                                                 f0,
+                                                                 walk_len)  # Get walk indices (and jump indications)
+            dxdydz = fill_dxdydz_features(mesh_data["vertices"], mesh_extra, seq, jumps, walk_len)
+            # print("seq: ", seq)
+            # print("jumps: ", jumps)
+            # print("dxdydz: ", dxdydz)
+            # print("**********")
+            mesh_walk_id = f"{mesh_identifier}__{walk_id}"
+            walks[mesh_walk_id] = {}
+            walks[mesh_walk_id]["seq"] = seq
+            # walks[mesh_walk_id]["jumps"] = jumps
+            walks[mesh_walk_id]["dxdydz"] = dxdydz
+            walk_coordinates = mesh_data["vertices"][seq]
+            # walks[mesh_walk_id]["edges_ratio_angle"] = random_walk_invariant_features(walk_coordinates, dxdydz=dxdydz)
     return walks
 
 
 def generate_walks_from_dataset(dataset_name, dataset_path, data_split, walk_params, output_file,
-                                dev_meshes_per_shape=None):
+                                dev_meshes_per_shape=None, data_augment_rotation=None):
     def get_dir_label(dir_path):
         for shape in shape_labels:
             delimited_shape = f"/{shape}"
@@ -162,7 +230,8 @@ def generate_walks_from_dataset(dataset_name, dataset_path, data_split, walk_par
             random_walks = generate_random_walks(mesh_file=obj_path_str,
                                                  num_walks_per_mesh=walk_params['num_walks_per_mesh'],
                                                  walk_len=walk_params['walk_len'],
-                                                 walk_len_vertices_ratio=walk_params['walk_len_vertices_ratio'])
+                                                 walk_len_vertices_ratio=walk_params['walk_len_vertices_ratio'],
+                                                 data_augment_rotation=data_augment_rotation)
             for walk in random_walks:
                 random_walks[walk]['shape_id'] = obj_path_str
                 random_walks[walk]['shape_label'] = label
@@ -261,10 +330,12 @@ def random_walk_invariant_features(random_walk_xyz, dxdydz=None):
 
 
 # x = generate_random_walks(mesh_file="./data/shrec_16/centaur/train/T6.obj",
-#                           num_walks_per_mesh=1,
-#                           walk_len=9,
-#                           walk_len_vertices_ratio=None)
-
+#                           num_walks_per_mesh=3,
+#                           walk_len=5,
+#                           walk_len_vertices_ratio=None,
+#                           data_augment_rotation=None)
+#
+# print(x)
 # print(x['./data/shrec_16/centaur/train/T6.obj__0']["dxdydz"])
 # a = x['./data/shrec_16/centaur/train/T6.obj__0']["dxdydz"][0]
 # b = x['./data/shrec_16/centaur/train/T6.obj__0']["dxdydz"][1]
@@ -291,22 +362,24 @@ def random_walk_invariant_features(random_walk_xyz, dxdydz=None):
 #     print(f)
 # print(SHREC16_SHAPE2LABEL)
 
-RANDOM_WALK_PARAMS = {'num_walks_per_mesh': 1024, 'walk_len': None, 'walk_len_vertices_ratio': 1}
+RANDOM_WALK_PARAMS = {'num_walks_per_mesh': 128, 'walk_len': None, 'walk_len_vertices_ratio': 0.5}
 
-output_json = f"./data/walks/walks_shrec16_test_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_1V_scaled.json"
+output_json = f"./data/walks/walks_shrec16_test_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V_scaled_rotated.json"
 generate_walks_from_dataset(dataset_name="shrec16",
                             dataset_path="./data/shrec_16/",
                             data_split="test",
                             walk_params=RANDOM_WALK_PARAMS,
-                            output_file=output_json)
+                            output_file=output_json,
+                            data_augment_rotation=True)
 
-output_json = f"./data/walks/walks_shrec16_train_dev_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_1V_scaled.json"
+output_json = f"./data/walks/walks_shrec16_train_dev_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V_scaled_rotated.json"
 generate_walks_from_dataset(dataset_name="shrec16",
                             dataset_path="./data/shrec_16/",
                             data_split="train",
                             walk_params=RANDOM_WALK_PARAMS,
                             output_file=output_json,
-                            dev_meshes_per_shape=2)
+                            dev_meshes_per_shape=2,
+                            data_augment_rotation=True)
 
 #
 # output_json = f"./data/walks/walks_cubes_test_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V_scaled.json"
