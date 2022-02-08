@@ -7,6 +7,8 @@ from pyvista import examples
 from easydict import EasyDict
 
 # from build_walk_dataset import norm_model
+from build_walk_dataset import norm_mesh, rotate_mesh_vertices_by_random_degree, rotate_mesh_vertices_by_axis
+from visualization import visualize_mesh, plot_mesh_edges, plot_random_walk
 from walks import get_seq_random_walk_random_global_jumps
 
 
@@ -54,95 +56,37 @@ def load_mesh(model_fn, classification=True):
     return mesh, mesh_
 
 
-def data_augmentation_rotation_test(vertices, max_rot_ang_deg):
-  x = np.random.uniform(-max_rot_ang_deg, max_rot_ang_deg) * np.pi / 180
-  y = np.random.uniform(-max_rot_ang_deg, max_rot_ang_deg) * np.pi / 180
-  z = np.random.uniform(-max_rot_ang_deg, max_rot_ang_deg) * np.pi / 180
-  A = np.array(((np.cos(x), -np.sin(x), 0),
-                (np.sin(x), np.cos(x), 0),
-                (0, 0, 1)),
-               dtype=vertices.dtype)
-  B = np.array(((np.cos(y), 0, -np.sin(y)),
-                (0, 1, 0),
-                (np.sin(y), 0, np.cos(y))),
-               dtype=vertices.dtype)
-  C = np.array(((1, 0, 0),
-                (0, np.cos(z), -np.sin(z)),
-                (0, np.sin(z), np.cos(z))),
-               dtype=vertices.dtype)
-  np.dot(vertices, A, out=vertices)
-  np.dot(vertices, B, out=vertices)
-  np.dot(vertices, C, out=vertices)
-  return vertices
-
-
-def norm_mesh_test(vertices):
-    # Move the mesh model so the bbox center will be at (0, 0, 0)
-    mean = np.mean((np.min(vertices, axis=0), np.max(vertices, axis=0)), axis=0)
-    vertices -= mean
-    # Scale mesh model to fit into the unit ball
-    norm_with = np.max(vertices)
-    vertices /= norm_with
-    return vertices
-
-filename = "./data/shrec_16/centaur/train/T6.obj"
-filename = "./data/shrec_16/alien/test/T124.obj"
-key = "data/shrec_16/alien/test/T124.obj__0"
-
-with open("./data/walks/walks_shrec16_test_walks_128_ratio_05V.json", "rb") as f:
-    data = json.load(f)
-walk_edges_seq = np.hstack(data[key]["seq"])
-list_arr = []
-for i in range(len(walk_edges_seq)-1):
-    # print(walk_edges_seq[i])
-    list_arr += [[2, walk_edges_seq[i], walk_edges_seq[i+1]]]
-walk_edges = np.hstack(list_arr)
-# print(walk_edges)
-x, x_ = load_mesh(filename)
-walk_vertices = np.array(x_.vertices)
-# print(walk_vertices)
-# walk_edges = np.hstack([[2, 232, 14], [2, 14, 187], [2, 187, 242], [2, 242, 202], [2, 202, 139], [2, 139, 234]])
-walk_mesh = pv.PolyData(walk_vertices, lines=walk_edges)
-# cpos = walk_mesh.plot(show_edges=True, color='black', background='white',)
-
-mesh = pv.read(filename)
-p = pv.Plotter()
-p.add_mesh(mesh, color=True)
-p.add_mesh(walk_mesh, color="red", line_width=5)
-p.camera.zoom(1.5)
-p.show()
-
-# mesh = pv.read(filename)
-# edges = mesh.extract_all_edges()
-# print(edges)
-#
-# vertices = np.array([[0, 0, 0], [1, 0, 0], [1, 0.5, 0], [0, 0.5, 0]])
-# lines = np.hstack([[2, 0, 1], [2, 1, 2]])
-# walk_mesh = pv.PolyData(vertices, lines=lines)
-# cpos = walk_mesh.plot(show_edges=True, color='black', background='white',)
-
-# edges.lines  # line connectivity stored here
-# edges.plot(scalars=np.random.random(edges.n_faces), line_width=5, cmap='jet')
-# edges.plot(scalars=np.random.random(edges.n_faces), line_width=5)
-
-# cpos = mesh.plot(show_edges=True, color='yellow', background='white',)
-
-# p = pv.Plotter()
-# p.add_mesh(mesh, color=True)
-# p.add_mesh(edges, color="red", line_width=5)
-# p.camera.zoom(1.5)
-# p.show()
+plot_random_walk(mesh_file="./data/shrec_16/dog1/train/T193.obj",
+                 walk_file="./data/walks/walks_shrec16_train_dev_walks_2_ratio_05V_scaled_rotated.json",
+                 walk_id="data/shrec_16/dog1/train/T193.obj__1",
+                 walk_color="#0AB9DC",
+                 zoom=1.5)
 
 # x, x_ = load_mesh(filename)
 # x_.show()
 
-# new_x_ = x_
-# new_x_.vertices = data_augmentation_rotation_test(norm_mesh_test(new_x_.vertices), 90)
+# new_x_ = new_x_
+# new_x_.vertices = data_augmentation_rotation_test(norm_mesh_test(new_x_.vertices), 10)
 # new_x_.show()
-#
-# new_x_ = x_
-# new_x_.vertices = data_augmentation_rotation_test(norm_mesh_test(new_x_.vertices), 90)
-# new_x_.show()
+
+# mesh, mesh_ = load_mesh(filename)
+# mesh_.show()
+# normalize mesh vertices to center unit ball for scaling issues
+# mesh_data = EasyDict({'vertices': norm_mesh(np.asarray(mesh.vertices)), 'faces': np.asarray(mesh.triangles)})
+# augmented_meshes = [mesh_data]
+# for ax in ['x']: #[['x'], ['y'], ['z'], ['x', 'y'], ['x', 'z'], ['y', 'z'], ['x', 'y', 'z']]:
+#     mesh_to_rotate, mesh_to_rotate_ = load_mesh(filename)
+#     rotated_normalized_vertices = rotate_mesh_vertices_by_random_degree(
+#         vertices=rotate_mesh_vertices_by_axis(
+#             vertices=norm_mesh(np.asarray(mesh_to_rotate.vertices)),
+#             rot_ang_deg=180,
+#             axis=ax),
+#         max_rot_ang_deg=0)
+#     mesh_to_rotate_.vertices = rotated_normalized_vertices
+#     mesh_to_rotate_.show()
+#     rotated_mesh_data = EasyDict({'vertices': rotated_normalized_vertices, 'faces': np.asarray(mesh.triangles)})
+#     augmented_meshes += [rotated_mesh_data]
+# print(len(augmented_meshes))
 
 # mesh = x_
 # Todo: functions for coloring
