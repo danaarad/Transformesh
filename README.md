@@ -1,7 +1,7 @@
 # Transformesh
 Mesh Classification Using Transformers - 3D Printing Course Project 2021
 
-## Setup
+## Setup ⚙️
 To run the evaluation script locally, using a *conda virtual environment*, do the following:
 
 1. Create a virtual environment
@@ -28,8 +28,10 @@ PYTHONPATH="." python3.7 scripts/evaluate_predictions.py
 
 ### Download Datasets
 https://ranahanocka.github.io/MeshCNN/
-https://www.dropbox.com/s/2bxs5f9g60wa0wr/cubes.tar.gz
-https://www.dropbox.com/s/w16st84r6wc57u7/shrec_16.tar.gz
+
+https://www.dropbox.com/s/2bxs5f9g60wa0wr/cubes.tar.gz  🧊
+
+https://www.dropbox.com/s/w16st84r6wc57u7/shrec_16.tar.gz 🐉
 
 ### Generate Random Walks
 
