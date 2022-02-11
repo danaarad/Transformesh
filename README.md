@@ -26,14 +26,12 @@ PYTHONPATH="." python3.7 scripts/evaluate_predictions.py
 ```
 
 
-## Docker
-We build an evaluator image using Docker, and the specified Dockerfile.
+### Download Datasets
+https://ranahanocka.github.io/MeshCNN/
+https://www.dropbox.com/s/2bxs5f9g60wa0wr/cubes.tar.gz
+https://www.dropbox.com/s/w16st84r6wc57u7/shrec_16.tar.gz
 
-### Build
-To build the break-evaluator image:
-```
-docker build --tag break-evaluator .
-```
+### Generate Random Walks
 
 ### Run
 Our evaluator should receive three files as input, the dataset true labels, the model's prediction file and the path to the output file. We therefore *bind mount* the relevant files when using `docker run`. 
@@ -43,3 +41,8 @@ The specific volume mounts, given our relevant files are storem in `tmp`, will b
 -v "$(pwd)"/tmp/predictions/:/predictions:ro
 -v "$(pwd)"/tmp/labels/:/labels:ro
 ```
+
+## Refernces
+MeshWalker
+MeshCNN
+Transformer
