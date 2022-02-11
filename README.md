@@ -1,7 +1,7 @@
 # Transformesh
 Mesh Classification Using Transformers - 3D Printing Course Project 2021
 
-## Setup ⚙️
+## Setup
 To run the evaluation script locally, using a *conda virtual environment*, do the following:
 
 1. Create a virtual environment
@@ -33,9 +33,9 @@ https://www.dropbox.com/s/2bxs5f9g60wa0wr/cubes.tar.gz  🧊
 
 https://www.dropbox.com/s/w16st84r6wc57u7/shrec_16.tar.gz 🐉
 
-### Generate Random Walks
+### Generate Random Walks 🤖
 
-### Run
+### Run 📈
 Our evaluator should receive three files as input, the dataset true labels, the model's prediction file and the path to the output file. We therefore *bind mount* the relevant files when using `docker run`. 
 The specific volume mounts, given our relevant files are storem in `tmp`, will be:
 ```
@@ -44,7 +44,7 @@ The specific volume mounts, given our relevant files are storem in `tmp`, will b
 -v "$(pwd)"/tmp/labels/:/labels:ro
 ```
 
-## Refernces
+## Refernces ✍🏽
 MeshWalker
 MeshCNN
 Transformer
