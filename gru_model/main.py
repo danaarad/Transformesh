@@ -212,8 +212,7 @@ def main():
                         help='report interval')
     parser.add_argument('--seed', type=int, default=42,
                         help='random seed')
-    parser.add_argument('--cuda', action='store_true', default=True,
-                        help='use CUDA')
+    parser.add_argument('--cuda', type=int, default=None, help='CUDA number')
 
     args = parser.parse_args()
 
@@ -223,7 +222,7 @@ def main():
         if not args.cuda:
             print("WARNING: You have a CUDA device, so you should probably run with --cuda")
 
-    args.device = torch.device("cuda:1" if args.cuda else "cpu")
+    args.device = torch.device(f"cuda:{args.cuda}" if args.cuda else "cpu")
     random.seed(args.seed)
 
     ###############################################################################
