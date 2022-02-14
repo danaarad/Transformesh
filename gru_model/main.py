@@ -26,10 +26,9 @@ def evaluate_loss(args, model, criterion, dataloader):
     with torch.no_grad():
         for batch_index, (data, labels) in enumerate(dataloader):
             data, labels = data.to(args.device), labels.to(args.device)
-            hidden_state = model.init_hidden(data.shape[0])
-
-            output, hidden_state = model(data, hidden_state)
-            hidden_state = hidden_state.detach()
+            # hidden_state = model.init_hidden(data.shape[0])
+            output = model(data)
+            # hidden_state = hidden_state.detach()
 
             output = output.to(args.device)[:, -1, :]
             output = torch.squeeze(output)
@@ -69,8 +68,8 @@ def evaluate_acc_by_majority(args, model, data):
             labels = labels.tile((args.num_walks, 1))
 
             data, labels = data.to(args.device), labels.to(args.device)
-            hidden_state = model.init_hidden(data.shape[0])
-            output, _ = model(data, hidden_state)
+            # hidden_state = model.init_hidden(data.shape[0])
+            output = model(data)
             output = output[:, -1, :]
             output = torch.squeeze(output)
             output = torch.softmax(output, dim=1)
@@ -136,9 +135,9 @@ def train_epoch(args, model, criterion, optimizer, epoch, dataloader):
         # labels.shape (nclasses)
 
         optimizer.zero_grad()
-        hidden_state = model.init_hidden(data.shape[0])
-        output, hidden_state = model(data, hidden_state)
-        hidden_state = hidden_state.detach()
+        # hidden_state = model.init_hidden(data.shape[0])
+        output = model(data)
+        # hidden_state = hidden_state.detach()
 
         # output.shape (batch_size, seq_size, nclasses)
 
@@ -224,7 +223,7 @@ def main():
         if not args.cuda:
             print("WARNING: You have a CUDA device, so you should probably run with --cuda")
 
-    args.device = torch.device("cuda:3" if args.cuda else "cpu")
+    args.device = torch.device("cuda:1" if args.cuda else "cpu")
     random.seed(args.seed)
 
     ###############################################################################
