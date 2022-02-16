@@ -60,25 +60,32 @@ generate_walks_from_dataset(dataset_name="cubes",
 
 Using the mesh random walk sequences and their labels we train a mesh classification model. 
 
-* To train the Transformer model run:
+* To train the **Transformer** model run:
 ```
-PYTHONPATH="." python3.7 scripts/evaluate_predictions.py 
---dataset_file=/labels/labels.csv \
---preds_file=/predictions/predictions.csv \
---no_cache \
---output_file_base=/results/results \
---metrics ged_scores exact_match sari normalized_exact_match \
+PYTHONPATH="." python model/main.py --train_json="/media/disk1/tomerwolfson/transformesh/data/walks/walks_cubes_train_dev_walks_256_ratio_05V_scaled.json" --dev_json="/media/disk1/tomerwolfson/transformesh/data/walks/walks_cubes_train_dev_walks_256_ratio_05V_scaled.json" --test_json="/media/disk1/tomerwolfson/transformesh/data/walks/walks_cubes_test_walks_256_ratio_05V_scaled.json"  --step_features=3 --features_type="dxdydz" --cuda=1 --save="transformesh_large_cubes_scaled_walks_128_05V_epochs_40.pt" --emsize=512 --nhid=2048 --nlayers=6 --nhead=8 --lr=1e-4 --dropout=0.1 --batch_size=128 --epochs=40 --num_walks=128 --max_walk_len=125 --nclasses=22
 ```
 
-* To train the GRU (vanilla MeshWalker) model run:
+* To train the **GRU** (vanilla MeshWalker) model run:
 ```
-PYTHONPATH="." python3.7 scripts/evaluate_predictions.py 
---dataset_file=/labels/labels.csv \
---preds_file=/predictions/predictions.csv \
---no_cache \
---output_file_base=/results/results \
---metrics ged_scores exact_match sari normalized_exact_match \
+PYTHONPATH="." python gru_model/main.py --train_json="/media/disk1/tomerwolfson/transformesh/MeshWalker-master/data/walks/walks_cubes_train_dev_walks_64_ratio_05V_scaled_rotated.json" --dev_json="/media/disk1/tomerwolfson/transformesh/MeshWalker-master/data/walks/walks_cubes_train_dev_walks_64_ratio_05V_scaled_rotated.json" --test_json="/media/disk1/tomerwolfson/transformesh/MeshWalker-master/data/walks/walks_cubes_test_walks_64_ratio_05V_scaled_rotated.json" --step_features=3 --cuda=1 --save="meshwalker_cubes_rotated_walks_32_05V_epochs_40.pt" --lr=1e-4 --dropout=0.2 --batch_size=128 --epochs=40 --num_walks=32 --max_walk_len=125 --nclasses=22
 ```
+
+* **Notes:**
+* ** `nclasses`: Determines the number of potential classes for our classifier, must be set to 22 for `cubes` and 30 for `shrec`
+* ** `features_type`: Whether to encode walk features using the coordinate translation (`dxdydz`) or the invariant walk features (`edges_ratio_angle`)
+* ** `step_features`: The number of walk features, set to 3 for coordinate translation (`dxdydz`), set to 2 for invariant walk features (`edges_ratio_angle`)
+* ** Default network hyperparams for Tranformer: `--emsize=512 --nhid=2048 --nlayers=6 --nhead=8 --lr=1e-4 --dropout=0.1 --batch_size=128 --epochs=40 --num_walks=128 --max_walk_len=125`
+* *** `emsize`: Embedding size (dimension)
+* *** `nhid`: Feed-forward dimension
+* *** `nlayers`: Number of Transformer Encoder layers
+* *** `lr`: Learning rate
+* *** `dropout`: Dropout
+* *** `batch_size`: Training batch size
+* *** `num_walks`: Number of random walks per mesh object to train on
+* *** `max_walk_len`: What is the maximum random walk length to be used
+* *** `nhead`: Number of self-attention heads
+* * ** Default network hyperparams for GRU: `--lr=1e-4 --dropout=0.2 --batch_size=128 --epochs=40 --num_walks=32 --max_walk_len=125`
+
 
 ## Refernces ✍🏽
 MeshWalker
