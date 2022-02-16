@@ -1,5 +1,5 @@
 # Transformesh
-Mesh Classification Using Transformers.
+3D mesh classification using Transformer.
 *3D Printing Course Project, Tel Aviv University February 2022.*
 
 ## Setup
