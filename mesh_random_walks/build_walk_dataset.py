@@ -200,7 +200,7 @@ def generate_random_walks(mesh_file,
             # walks[mesh_walk_id]["jumps"] = jumps
             walks[mesh_walk_id]["dxdydz"] = dxdydz
             walk_coordinates = mesh_data["vertices"][seq]
-            # walks[mesh_walk_id]["edges_ratio_angle"] = random_walk_invariant_features(walk_coordinates, dxdydz=dxdydz)
+            walks[mesh_walk_id]["edges_ratio_angle"] = random_walk_invariant_features(walk_coordinates, dxdydz=dxdydz)
     return walks
 
 
