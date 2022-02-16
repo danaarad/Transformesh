@@ -95,7 +95,7 @@ PYTHONPATH="." python gru_model/main.py --train_json="/mydir/Transformesh/data/w
 * Different random walks for the same mesh object (SHREC dataset)
 
 ![Alt text](/images/gorilla_random_walks.png)
-<img src="/images/gorilla_random_walks.pn" alt="drawing" width="200"/>
+<img src="/images/gorilla_random_walks.png" alt="drawing" width="200"/>
 
 
 * Random walks generated for different meshes (SHREC dataset)
