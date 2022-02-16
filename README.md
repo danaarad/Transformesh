@@ -1,5 +1,6 @@
 # Transformesh
-Mesh Classification Using Transformers - 3D Printing Course Project 2021
+Mesh Classification Using Transformers.
+*3D Printing Course Project, Tel Aviv University February 2022.*
 
 ## Setup
 
