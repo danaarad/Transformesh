@@ -2,6 +2,13 @@
 Mesh Classification Using Transformers - 3D Printing Course Project 2021
 
 ## Setup
+
+### Download Mesh Datasets
+
+We use the SHREC and Cube Engraving datasets used in [MeshCNN](https://ranahanocka.github.io/MeshCNN/)
+
+### Setup the running environment
+
 To run the evaluation script locally, using a *conda virtual environment*, do the following:
 
 1. Create a virtual environment
