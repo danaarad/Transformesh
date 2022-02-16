@@ -32,7 +32,9 @@ pip install -r requirements.txt
 
 ### Generate Random Walks 🤖
 
-Run in shell
+Generate a dataset of random walks over mesh vertices. This dataset of random walk sequences and their respective mesh labels, is used to train a sequence classification model.
+
+
 ```
 PYTHONPATH="." python3.7 scripts/evaluate_predictions.py 
 --dataset_file=/labels/labels.csv \
