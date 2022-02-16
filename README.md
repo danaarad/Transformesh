@@ -5,7 +5,9 @@ Mesh Classification Using Transformers - 3D Printing Course Project 2021
 
 ### Download Mesh Datasets
 
-We use the SHREC and Cube Engraving datasets used in [MeshCNN](https://ranahanocka.github.io/MeshCNN/)
+We use the SHREC and Engraved Cubes datasets used in [MeshCNN](https://ranahanocka.github.io/MeshCNN/).
+* **SHREC (Split 16)** 🐉: [download](https://www.dropbox.com/s/w16st84r6wc57u7/shrec_16.tar.gz)
+* **Engraved Cubes** 🧊: [download](https://www.dropbox.com/s/2bxs5f9g60wa0wr/cubes.tar.gz)
 
 ### Setup the running environment
 
@@ -31,14 +33,6 @@ PYTHONPATH="." python3.7 scripts/evaluate_predictions.py
 --output_file_base=/results/results \
 --metrics ged_scores exact_match sari normalized_exact_match \
 ```
-
-
-### Download Datasets
-https://ranahanocka.github.io/MeshCNN/
-
-https://www.dropbox.com/s/2bxs5f9g60wa0wr/cubes.tar.gz  🧊
-
-https://www.dropbox.com/s/w16st84r6wc57u7/shrec_16.tar.gz 🐉
 
 ### Generate Random Walks 🤖
 
