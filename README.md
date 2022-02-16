@@ -92,3 +92,4 @@ PYTHONPATH="." python gru_model/main.py --train_json="/mydir/Transformesh/data/w
 ## Refernces ✍🏽
 * *MeshWalker: Deep Mesh Understanding by Random Walks*. Lahav and Tal, 2020. [Repository](https://github.com/AlonLahav/MeshWalker)
 * *MeshCNN: A Network with an Edge*. Hanocka et al., 2019. [Repository](https://ranahanocka.github.io/MeshCNN/)
+* *Attention Is All You Need*. Vaswani et al., 2017. [Paper](https://arxiv.org/abs/1706.03762)
