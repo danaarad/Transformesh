@@ -75,7 +75,7 @@ PYTHONPATH="." python gru_model/main.py --train_json="/mydir/Transformesh/data/w
   * `nclasses`: Determines the number of potential classes for our classifier, must be set to 22 for `cubes` and 30 for `shrec`
   * `features_type`: Whether to encode walk features using the coordinate translation (`dxdydz`) or the invariant walk features (`edges_ratio_angle`)
   * `step_features`: The number of walk features, set to 3 for coordinate translation (`dxdydz`), set to 2 for invariant walk features (`edges_ratio_angle`)
-* **Default network hyperparams for Tranformer:**
+* **Top network hyperparams for Tranformer:**
   *  `--emsize=512 --nhid=2048 --nlayers=6 --nhead=8 --lr=1e-4 --dropout=0.1 --batch_size=128 --epochs=40 --num_walks=128 --max_walk_len=125`
       * `emsize`: Embedding size (dimension)
       * `nhid`: Feed-forward dimension
@@ -86,7 +86,7 @@ PYTHONPATH="." python gru_model/main.py --train_json="/mydir/Transformesh/data/w
       * `num_walks`: Number of random walks per mesh object to train on
       * `max_walk_len`: What is the maximum random walk length to be used
       * `nhead`: Number of self-attention heads
-* **Default network hyperparams for GRU:**
+* **Top network hyperparams for GRU:**
   *   `--lr=1e-4 --dropout=0.2 --batch_size=128 --epochs=40 --num_walks=32 --max_walk_len=125`
 
 ### Results
