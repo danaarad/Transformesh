@@ -91,7 +91,7 @@ PYTHONPATH="." python gru_model/main.py --train_json="/mydir/Transformesh/data/w
 
 ### Results
 
-Top model results and top configuration
+Top model results:
 
 | Model | SHREC Acc. | Cubes Acc. |
 |-----------|-------------------------|-------------------------|
