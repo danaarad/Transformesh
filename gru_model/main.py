@@ -145,7 +145,6 @@ def train_epoch(args, model, criterion, optimizer, epoch, dataloader):
         output = torch.squeeze(output)
         # output.shape (batch_size, nclasses)
 
-
         # The output is expected to contain scores for each class.
         # output has to be a 2D Tensor of size (minibatch, C).
         # This criterion expects a class index (0 to C-1) as the target
@@ -213,6 +212,7 @@ def main():
     parser.add_argument('--seed', type=int, default=42,
                         help='random seed')
     parser.add_argument('--cuda', type=int, default=None, help='CUDA number')
+    parser.add_argument('--evaluate', type=bool, default=None, help='whether to evaluate a trained model and exit')
 
     args = parser.parse_args()
 
@@ -224,6 +224,7 @@ def main():
 
     args.device = torch.device(f"cuda:{args.cuda}" if args.cuda else "cpu")
     random.seed(args.seed)
+
 
     ###############################################################################
     # Build the model
@@ -260,6 +261,24 @@ def main():
     test_data = preprocess_for_eval_by_majority(args, test_data)
 
     ###############################################################################
+    # Evaluate a trained model from file
+    ###############################################################################
+
+    if args.evaluate:
+        with open(args.save, 'rb') as f:
+            best_model = torch.load(f)
+        train_acc = evaluate_acc_by_majority(args, best_model, train_data)
+        dev_acc = evaluate_acc_by_majority(args, best_model, dev_data)
+        test_acc = evaluate_acc_by_majority(args, best_model, test_data)
+        print('-' * 89)
+        print('| best model: train accuracy {:5.4f}, dev accuracy {:5.4f}, test accuracy {:5.4f} '.format(
+            train_acc,
+            dev_acc,
+            test_acc))
+        print('-' * 89)
+        return True
+
+    ###############################################################################
     # Training code
     ###############################################################################
 
@@ -274,7 +293,7 @@ def main():
             dev_acc = evaluate_acc_by_majority(args, model, dev_data)
 
             print('-' * 89)
-            print('| end of epoch {:3d} | time: {:5.2f}s | train accuracy {:5.3f} | dev accuracy {:5.3f}'.format(
+            print('| end of epoch {:3d} | time: {:5.2f}s | train accuracy {:5.4f} | dev accuracy {:5.4f}'.format(
                 epoch, (time.time() - epoch_start_time), train_acc, dev_acc))
             print('-' * 89)
             # Save the model if the validation loss is the best we've seen so far.
@@ -284,10 +303,10 @@ def main():
                 best_dev_acc = dev_acc
                 best_epoch = epoch
 
-                test_acc = evaluate_acc_by_majority(args, model, test_data)
-                print('-' * 89)
-                print('| best model so far, test accuracy {:5.3f} '.format(test_acc))
-                print('-' * 89)
+                # test_acc = evaluate_acc_by_majority(args, model, test_data)
+                # print('-' * 89)
+                # print('| best model so far, test accuracy {:5.4f} '.format(test_acc))
+                # print('-' * 89)
 
         with open(args.save, 'rb') as f:
             best_model = torch.load(f)
@@ -295,7 +314,7 @@ def main():
         dev_acc = evaluate_acc_by_majority(args, best_model, dev_data)
         test_acc = evaluate_acc_by_majority(args, best_model, test_data)
         print('-' * 89)
-        print('| best model from epoch {}: train accuracy {:5.3f}, dev accuracy {:5.3f}, test accuracy {:5.3f} '.format(
+        print('| best model from epoch {}: train accuracy {:5.4f}, dev accuracy {:5.4f}, test accuracy {:5.4f} '.format(
             best_epoch,
             train_acc,
             dev_acc,
