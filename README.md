@@ -30,7 +30,7 @@ pip install -r requirements.txt
 /mydir/Transformesh/data/cubes
 ```
 
-### Generate Random Walks 🤖
+## Generate Random Walks 🤖
 
 Generate a dataset of random walks over mesh vertices. The generated random walk sequences together with their respective mesh labels, are used to train a sequence classification model.
 
@@ -56,7 +56,7 @@ generate_walks_from_dataset(dataset_name="cubes",
 * `data_augment_rotation`: Whether to augment the data with random walks over rotated mesh objects
 
 
-### Train Mesh Calssification Models 📈
+## Train Mesh Calssification Models 📈
 
 Using the mesh random walk sequences and their labels we train a mesh classification model. 
 
