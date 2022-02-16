@@ -62,12 +62,12 @@ Using the mesh random walk sequences and their labels we train a mesh classifica
 
 * To train the **Transformer** model run:
 ```
-PYTHONPATH="." python model/main.py --train_json="/media/disk1/tomerwolfson/transformesh/data/walks/walks_cubes_train_dev_walks_256_ratio_05V_scaled.json" --dev_json="/media/disk1/tomerwolfson/transformesh/data/walks/walks_cubes_train_dev_walks_256_ratio_05V_scaled.json" --test_json="/media/disk1/tomerwolfson/transformesh/data/walks/walks_cubes_test_walks_256_ratio_05V_scaled.json"  --step_features=3 --features_type="dxdydz" --cuda=1 --save="transformesh_large_cubes_scaled_walks_128_05V_epochs_40.pt" --emsize=512 --nhid=2048 --nlayers=6 --nhead=8 --lr=1e-4 --dropout=0.1 --batch_size=128 --epochs=40 --num_walks=128 --max_walk_len=125 --nclasses=22
+PYTHONPATH="." python model/main.py --train_json="/mydir/Transformesh/data/walks/walks_cubes_train_dev_walks_256_ratio_05V_scaled.json" --dev_json="/mydir/Transformesh/data/walks/walks_cubes_train_dev_walks_256_ratio_05V_scaled.json" --test_json="/mydir/Transformesh/data/walks/walks_cubes_test_walks_256_ratio_05V_scaled.json"  --step_features=3 --features_type="dxdydz" --cuda=1 --save="transformesh_large_cubes_scaled_walks_128_05V_epochs_40.pt" --emsize=512 --nhid=2048 --nlayers=6 --nhead=8 --lr=1e-4 --dropout=0.1 --batch_size=128 --epochs=40 --num_walks=128 --max_walk_len=125 --nclasses=22
 ```
 
 * To train the **GRU** (vanilla MeshWalker) model run:
 ```
-PYTHONPATH="." python gru_model/main.py --train_json="/media/disk1/tomerwolfson/transformesh/MeshWalker-master/data/walks/walks_cubes_train_dev_walks_64_ratio_05V_scaled_rotated.json" --dev_json="/media/disk1/tomerwolfson/transformesh/MeshWalker-master/data/walks/walks_cubes_train_dev_walks_64_ratio_05V_scaled_rotated.json" --test_json="/media/disk1/tomerwolfson/transformesh/MeshWalker-master/data/walks/walks_cubes_test_walks_64_ratio_05V_scaled_rotated.json" --step_features=3 --cuda=1 --save="meshwalker_cubes_rotated_walks_32_05V_epochs_40.pt" --lr=1e-4 --dropout=0.2 --batch_size=128 --epochs=40 --num_walks=32 --max_walk_len=125 --nclasses=22
+PYTHONPATH="." python gru_model/main.py --train_json="/mydir/Transformesh/data/walks/walks_cubes_train_dev_walks_64_ratio_05V_scaled_rotated.json" --dev_json="/mydir/Transformesh/data/walks/walks_cubes_train_dev_walks_64_ratio_05V_scaled_rotated.json" --test_json="/mydir/Transformesh/data/walks/walks_cubes_test_walks_64_ratio_05V_scaled_rotated.json" --step_features=3 --cuda=1 --save="meshwalker_cubes_rotated_walks_32_05V_epochs_40.pt" --lr=1e-4 --dropout=0.2 --batch_size=128 --epochs=40 --num_walks=32 --max_walk_len=125 --nclasses=22
 ```
 
 * **Notes:**
