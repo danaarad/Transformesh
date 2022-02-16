@@ -26,13 +26,13 @@ pip install -r requirements.txt
 
 3. Move the mesh classification datasets to a data directory, for example:
 ```
-/mydir/transformer/data/shrec_16
-/mydir/transformer/data/cubes
+/mydir/transformesh/data/shrec_16
+/mydir/transformesh/data/cubes
 ```
 
 ### Generate Random Walks 🤖
 
-3. Run in shell
+Run in shell
 ```
 PYTHONPATH="." python3.7 scripts/evaluate_predictions.py 
 --dataset_file=/labels/labels.csv \
