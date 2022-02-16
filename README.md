@@ -24,6 +24,14 @@ conda activate [ENV_NAME]
 pip install -r requirements.txt 
 ```
 
+3. Move the mesh classification datasets to a data directory, for example:
+```
+/mydir/transformer/data/shrec_16
+/mydir/transformer/data/cubes
+```
+
+### Generate Random Walks 🤖
+
 3. Run in shell
 ```
 PYTHONPATH="." python3.7 scripts/evaluate_predictions.py 
@@ -34,15 +42,16 @@ PYTHONPATH="." python3.7 scripts/evaluate_predictions.py
 --metrics ged_scores exact_match sari normalized_exact_match \
 ```
 
-### Generate Random Walks 🤖
-
 ### Run 📈
-Our evaluator should receive three files as input, the dataset true labels, the model's prediction file and the path to the output file. We therefore *bind mount* the relevant files when using `docker run`. 
-The specific volume mounts, given our relevant files are storem in `tmp`, will be:
+
+3. Run in shell
 ```
--v "$(pwd)"/tmp/results/:/results:rw
--v "$(pwd)"/tmp/predictions/:/predictions:ro
--v "$(pwd)"/tmp/labels/:/labels:ro
+PYTHONPATH="." python3.7 scripts/evaluate_predictions.py 
+--dataset_file=/labels/labels.csv \
+--preds_file=/predictions/predictions.csv \
+--no_cache \
+--output_file_base=/results/results \
+--metrics ged_scores exact_match sari normalized_exact_match \
 ```
 
 ## Refernces ✍🏽
