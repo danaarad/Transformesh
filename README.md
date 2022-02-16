@@ -89,6 +89,15 @@ PYTHONPATH="." python gru_model/main.py --train_json="/mydir/Transformesh/data/w
 * **Default network hyperparams for GRU:**
   *   `--lr=1e-4 --dropout=0.2 --batch_size=128 --epochs=40 --num_walks=32 --max_walk_len=125`
 
+### Results
+
+Top model results and top configuration
+
+| Model | SHREC Acc. | Cubes Acc. |
+|-----------|-------------------------|-------------------------|
+| Tranformer      | 76.7%                   | 93.9%                 | 
+| GRU             | 94.4%                   | 96.4%                  | 
+
 
 ## Example walks 🐍
 
