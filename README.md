@@ -39,7 +39,7 @@ Generate a dataset of random walks over mesh vertices. The generated random walk
 PYTHONPATH="." python mesh_random_walks/build_walk_dataset.py 
 ```
 
-### Run 📈
+### Train Mesh Calssification Models 📈
 
 Using the mesh random walk sequences and their labels we train a mesh classification model. 
 
