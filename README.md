@@ -26,22 +26,17 @@ pip install -r requirements.txt
 
 3. Move the mesh classification datasets to a data directory, for example:
 ```
-/mydir/transformesh/data/shrec_16
-/mydir/transformesh/data/cubes
+/mydir/Transformesh/data/shrec_16
+/mydir/Transformesh/data/cubes
 ```
 
 ### Generate Random Walks 🤖
 
-Generate a dataset of random walks over mesh vertices. This dataset of random walk sequences and their respective mesh labels, is used to train a sequence classification model.
+Generate a dataset of random walks over mesh vertices. The generated random walk sequences together with their respective mesh labels, are used to train a sequence classification model.
 
 
 ```
-PYTHONPATH="." python3.7 scripts/evaluate_predictions.py 
---dataset_file=/labels/labels.csv \
---preds_file=/predictions/predictions.csv \
---no_cache \
---output_file_base=/results/results \
---metrics ged_scores exact_match sari normalized_exact_match \
+PYTHONPATH="." python mesh_random_walks/build_walk_dataset.py 
 ```
 
 ### Run 📈
