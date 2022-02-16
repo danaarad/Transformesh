@@ -95,12 +95,14 @@ PYTHONPATH="." python gru_model/main.py --train_json="/mydir/Transformesh/data/w
 * Different random walks for the same mesh object (SHREC dataset)
 
 ![Alt text](/images/gorilla_random_walks.png)
+<img src="/images/gorilla_random_walks.pn" alt="drawing" width="200"/>
+
 
 * Random walks generated for different meshes (SHREC dataset)
 
 ![Alt text](/images/shrec_random_walks.png)
 
-## Refernces ✍🏽
+## References ✍🏽
 * *MeshWalker: Deep Mesh Understanding by Random Walks*. Lahav and Tal, 2020. [Repository](https://github.com/AlonLahav/MeshWalker)
 * *MeshCNN: A Network with an Edge*. Hanocka et al., 2019. [Repository](https://ranahanocka.github.io/MeshCNN/)
 * *Attention Is All You Need*. Vaswani et al., 2017. [Paper](https://arxiv.org/abs/1706.03762)
