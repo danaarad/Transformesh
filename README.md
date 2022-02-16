@@ -6,12 +6,12 @@ Mesh Classification Using Transformers - 3D Printing Course Project 2021
 ### Download Mesh Datasets
 
 We use the SHREC and Engraved Cubes datasets used in [MeshCNN](https://ranahanocka.github.io/MeshCNN/).
-* [**SHREC (Split 16)**](https://www.dropbox.com/s/w16st84r6wc57u7/shrec_16.tar.gz) 🐉: 
+* [**SHREC (Split 16)**](https://www.dropbox.com/s/w16st84r6wc57u7/shrec_16.tar.gz) 🐉
 * [**Engraved Cubes**](https://www.dropbox.com/s/2bxs5f9g60wa0wr/cubes.tar.gz) 🧊
 
 ### Setup the running environment
 
-To run the evaluation script locally, using a *conda virtual environment*, do the following:
+To run Transformeh Walker locally, use a *conda virtual environment* as follows:
 
 1. Create a virtual environment
 ```
