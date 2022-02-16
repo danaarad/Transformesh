@@ -49,6 +49,11 @@ generate_walks_from_dataset(dataset_name="cubes",
                             output_file=output_json,
                             data_augment_rotation=True)
 ```
+* `dataset_name`: The mesh classification dataset, either `cubes` or `shrec`
+* `dataset_path`: The path to the mesh dataset directory
+* `walk_params`: Set the number of random walks generated for each mesh objest in the dataset, control the walk length (`walk_len`) or limit the length to a ratio of the mesh vertices (`walk_len_vertices_ratio`)
+* `output_file`: File to store the generated dataset in
+* `data_augment_rotation`: Whether to augment the data with random walks over rotated mesh objects
 
 
 ### Train Mesh Calssification Models 📈
