@@ -39,6 +39,18 @@ Generate a dataset of random walks over mesh vertices. The generated random walk
 PYTHONPATH="." python mesh_random_walks/build_walk_dataset.py 
 ```
 
+Alternatively, manually configure the dataset parameters by using the `generate_walks_from_dataset` function in `mesh_random_walks/build_walk_dataset.py` as follows:
+
+```
+generate_walks_from_dataset(dataset_name="cubes",
+                            dataset_path="./data/cubes/",
+                            data_split="test",
+                            walk_params={'num_walks_per_mesh': 128, 'walk_len': None, 'walk_len_vertices_ratio': 0.5},
+                            output_file=output_json,
+                            data_augment_rotation=True)
+```
+
+
 ### Train Mesh Calssification Models 📈
 
 Using the mesh random walk sequences and their labels we train a mesh classification model. 
