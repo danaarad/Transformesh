@@ -86,24 +86,24 @@ def rotate_mesh_vertices_by_axis(vertices, rot_ang_deg, axis):
     y = rot_ang_deg * np.pi / 180
     z = rot_ang_deg * np.pi / 180
     assert set(axis).issubset(['x', 'y', 'z'])
+    A = np.array(((1, 0, 0),
+                  (0, np.cos(x), -np.sin(x)),
+                  (0, np.sin(x), np.cos(x))),
+                 dtype=vertices.dtype)
+    B = np.array(((np.cos(y), 0, np.sin(y)),
+                  (0, 1, 0),
+                  (-np.sin(y), 0, np.cos(y))),
+                 dtype=vertices.dtype)
+    C = np.array(((np.cos(z), -np.sin(z), 0),
+                  (np.sin(z), np.cos(z), 0),
+                  (0, 0, 1)),
+                 dtype=vertices.dtype)
     if 'x' in axis:
-        A = np.array(((np.cos(x), -np.sin(x), 0),
-                      (np.sin(x), np.cos(x), 0),
-                      (0, 0, 1)),
-                     dtype=vertices.dtype)
-        np.dot(vertices, A, out=vertices)
+        vertices = np.dot(vertices, A, out=vertices)
     if 'y' in axis:
-        B = np.array(((np.cos(y), 0, -np.sin(y)),
-                      (0, 1, 0),
-                      (np.sin(y), 0, np.cos(y))),
-                     dtype=vertices.dtype)
-        np.dot(vertices, B, out=vertices)
+        vertices = np.dot(vertices, B, out=vertices)
     if 'z' in axis:
-        C = np.array(((1, 0, 0),
-                      (0, np.cos(z), -np.sin(z)),
-                      (0, np.sin(z), np.cos(z))),
-                     dtype=vertices.dtype)
-        np.dot(vertices, C, out=vertices)
+        vertices = np.dot(vertices, C, out=vertices)
     return vertices
 
 
@@ -363,32 +363,59 @@ def random_walk_invariant_features(random_walk_xyz, dxdydz=None):
 #     print(f)
 # print(SHREC16_SHAPE2LABEL)
 
-RANDOM_WALK_PARAMS = {'num_walks_per_mesh': 128, 'walk_len': None, 'walk_len_vertices_ratio': 0.5}
+# RANDOM_WALK_PARAMS = {'num_walks_per_mesh': 256, 'walk_len': None, 'walk_len_vertices_ratio': 1}
 
-output_json = f"./data/walks/walks_shrec16_test_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V_scaled_rotated.json"
-generate_walks_from_dataset(dataset_name="shrec16",
-                            dataset_path="./data/shrec_16/",
-                            data_split="test",
-                            walk_params=RANDOM_WALK_PARAMS,
-                            output_file=output_json,
-                            data_augment_rotation=True)
+# SHREC - Split 16
+# output_json = f"./data/walks/walks_shrec16_test_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_1V_scaled_rotated.json"
+# generate_walks_from_dataset(dataset_name="shrec16",
+#                             dataset_path="./data/shrec_16/",
+#                             data_split="test",
+#                             walk_params=RANDOM_WALK_PARAMS,
+#                             output_file=output_json,
+#                             data_augment_rotation=True)
+#
+# output_json = f"./data/walks/walks_shrec16_train_dev_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_1V_scaled_rotated.json"
+# generate_walks_from_dataset(dataset_name="shrec16",
+#                             dataset_path="./data/shrec_16/",
+#                             data_split="train",
+#                             walk_params=RANDOM_WALK_PARAMS,
+#                             output_file=output_json,
+#                             dev_meshes_per_shape=2,
+#                             data_augment_rotation=True)
 
-output_json = f"./data/walks/walks_shrec16_train_dev_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V_scaled_rotated.json"
-generate_walks_from_dataset(dataset_name="shrec16",
-                            dataset_path="./data/shrec_16/",
-                            data_split="train",
-                            walk_params=RANDOM_WALK_PARAMS,
-                            output_file=output_json,
-                            dev_meshes_per_shape=2,
-                            data_augment_rotation=True)
+# Cube Engraving
 
+# RANDOM_WALK_PARAMS = {'num_walks_per_mesh': 128, 'walk_len': None, 'walk_len_vertices_ratio': 0.5}
+#
+#
+# output_json = f"./data/walks/walks_cubes_test_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V_scaled_rotated.json"
+# generate_walks_from_dataset(dataset_name="cubes",
+#                             dataset_path="./data/cubes/",
+#                             data_split="test",
+#                             walk_params=RANDOM_WALK_PARAMS,
+#                             output_file=output_json,
+#                             data_augment_rotation=True)
+#
+# output_json = f"./data/walks/walks_cubes_train_dev_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V_scaled_rotated.json"
+# generate_walks_from_dataset(dataset_name="cubes",
+#                             dataset_path="./data/cubes/",
+#                             data_split="train",
+#                             walk_params=RANDOM_WALK_PARAMS,
+#                             output_file=output_json,
+#                             dev_meshes_per_shape=15,
+#                             data_augment_rotation=True)
+
+
+# RANDOM_WALK_PARAMS = {'num_walks_per_mesh': 256, 'walk_len': None, 'walk_len_vertices_ratio': 0.5}
+#
 #
 # output_json = f"./data/walks/walks_cubes_test_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V_scaled.json"
 # generate_walks_from_dataset(dataset_name="cubes",
 #                             dataset_path="./data/cubes/",
 #                             data_split="test",
 #                             walk_params=RANDOM_WALK_PARAMS,
-#                             output_file=output_json)
+#                             output_file=output_json,
+#                             data_augment_rotation=None)
 #
 # output_json = f"./data/walks/walks_cubes_train_dev_walks_{RANDOM_WALK_PARAMS['num_walks_per_mesh']}_ratio_05V_scaled.json"
 # generate_walks_from_dataset(dataset_name="cubes",
@@ -396,4 +423,5 @@ generate_walks_from_dataset(dataset_name="shrec16",
 #                             data_split="train",
 #                             walk_params=RANDOM_WALK_PARAMS,
 #                             output_file=output_json,
-#                             dev_meshes_per_shape=15)
+#                             dev_meshes_per_shape=15,
+#                             data_augment_rotation=None)
