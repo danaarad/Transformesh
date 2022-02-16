@@ -41,7 +41,19 @@ PYTHONPATH="." python mesh_random_walks/build_walk_dataset.py
 
 ### Run 📈
 
-3. Run in shell
+Using the mesh random walk sequences and their labels we train a mesh classification model. 
+
+* To train the Transformer model run:
+```
+PYTHONPATH="." python3.7 scripts/evaluate_predictions.py 
+--dataset_file=/labels/labels.csv \
+--preds_file=/predictions/predictions.csv \
+--no_cache \
+--output_file_base=/results/results \
+--metrics ged_scores exact_match sari normalized_exact_match \
+```
+
+* To train the GRU (vanilla MeshWalker) model run:
 ```
 PYTHONPATH="." python3.7 scripts/evaluate_predictions.py 
 --dataset_file=/labels/labels.csv \
