@@ -96,7 +96,7 @@ Top model results:
 | Model | SHREC (16) Acc. | Cubes Acc. |
 |-----------|-------------------------|-------------------------|
 | Tranformer      | 76.7%                   | 87.9%                 | 
-| GRU             | 94.4%                   | 96.4%                  | 
+| GRU             | 94.4%                   | 98.8%                  | 
 
 
 ## Example walks 🐍
